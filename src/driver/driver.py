@@ -26,12 +26,20 @@ heading = 0
 elevation = 0
 location = 0
 ANGLEDELTA = 5 * math.pi / 180
+
+vp_id = None
+
 while True:
     sim.makeAction(location, heading, elevation)
     location = 0
     heading = 0
     elevation = 0
     state = sim.getState()
+
+    if state.location.viewpointId != vp_id:
+        vp_id = state.location.viewpointId
+        print vp_id, state.location.point
+
     locations = state.navigableLocations
     im = state.rgb
     origin = locations[0].point
