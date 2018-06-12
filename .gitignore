@@ -1,1 +1,4 @@
 *.pyc
+tasks/R2R/snapshots/
+tasks/R2R/results/
+tasks/R2R/plots/
