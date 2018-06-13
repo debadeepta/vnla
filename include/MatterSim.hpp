@@ -185,6 +185,7 @@ namespace mattersim {
          * @param elevation - desired elevation change in radians, measured from the horizon defined 
          *                    by the x-y plane (up is positive).
          */
+
         void makeAction(int index, double heading, double elevation);
         
         /**
@@ -200,6 +201,8 @@ namespace mattersim {
         void loadTexture(int locationId);
         void setHeadingElevation(double heading, double elevation);
         void renderScene();
+        void setLocation(std::string viewpointId, unsigned int ix);
+
 #ifdef OSMESA_RENDERING
         void *buffer;
         OSMesaContext ctx;

@@ -19,7 +19,8 @@ sim.setCameraVFOV(VFOV)
 sim.init()
 
 house_id = sys.argv[1]
-sim.newEpisode(house_id, '', 0, 0)
+view_id = sys.argv[2]
+sim.newEpisode(house_id, view_id, 0, 0)
 
 
 heading = 0
