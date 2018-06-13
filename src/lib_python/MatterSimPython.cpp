@@ -119,6 +119,12 @@ namespace mattersim {
         void makeAction(int index, double heading, double elevation) {
             sim.makeAction(index, heading, elevation);
         }
+        void loadTexture(int locationId) {
+            sim.loadTexture(locationId);
+        }
+        void renderScene() {
+            sim.renderScene();
+        }
         void close() {
             sim.close();
         }
@@ -160,6 +166,8 @@ PYBIND11_MODULE(MatterSim, m) {
         .def("newEpisode", &SimulatorPython::newEpisode)
         .def("getState", &SimulatorPython::getState, py::return_value_policy::take_ownership)
         .def("makeAction", &SimulatorPython::makeAction)
+        .def("loadTexture", &SimulatorPython::loadTexture)
+        .def("renderScene", &SimulatorPython::renderScene)
         .def("close", &SimulatorPython::close);
 }
 
