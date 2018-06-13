@@ -438,6 +438,11 @@ SimStatePtr Simulator::getState() {
     return this->state;
 }
 
+void Simulator::setLocation(std::string viewpointId, unsigned int ix) {
+    state->location->viewpointId = viewpointId;
+    state->location->ix = ix;
+}
+
 void Simulator::renderScene() {
     renderTimer.Start();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

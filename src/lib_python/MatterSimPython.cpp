@@ -116,6 +116,11 @@ namespace mattersim {
         SimStatePython *getState() {
             return new SimStatePython(sim.getState(), sim.renderingEnabled);
         }
+
+        void setLocation(std::string viewpointId, unsigned int ix)  {
+            sim.setLocation(viewpointId, ix);
+        }
+
         void makeAction(int index, double heading, double elevation) {
             sim.makeAction(index, heading, elevation);
         }
@@ -168,6 +173,7 @@ PYBIND11_MODULE(MatterSim, m) {
         .def("makeAction", &SimulatorPython::makeAction)
         .def("loadTexture", &SimulatorPython::loadTexture)
         .def("renderScene", &SimulatorPython::renderScene)
+        .def("setLocation", &SimulatorPython::setLocation)
         .def("close", &SimulatorPython::close);
 }
 
