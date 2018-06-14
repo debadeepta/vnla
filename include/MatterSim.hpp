@@ -234,6 +234,8 @@ namespace mattersim {
         std::string datasetPath;
         std::string navGraphPath;
         std::map<std::string, std::vector<LocationPtr> > scanLocations;
+        std::map<std::string, std::map<std::string, unsigned int> > viewpointId_to_graphId;
+        std::map<std::string, std::map<int, std::vector<unsigned int> > > unobstructed_included_views;
         std::default_random_engine generator;
         Timer cpuLoadTimer;
         Timer gpuLoadTimer;

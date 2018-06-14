@@ -249,6 +249,8 @@ void Simulator::loadLocationGraph() {
                 navGraphFile + ", is scan id valid?" );
     }
     ifs >> root;
+
+    auto ix = 0;
     for (auto viewpoint : root) {
         float posearr[16];
         int i = 0;
@@ -269,8 +271,22 @@ void Simulator::loadLocationGraph() {
         auto viewpointId = viewpoint["image_id"].asString();
         GLuint cubemap_texture = 0;
         Location l{viewpoint["included"].asBool(), viewpointId, openglPose, pos, unobstructed, cubemap_texture};
+        viewpointId_to_graphId[state->scanId][viewpointId] = ix++;
         scanLocations[state->scanId].push_back(std::make_shared<Location>(l));
     }
+   
+    for (unsigned int i = 0; i < scanLocations[state->scanId].size(); ++i) {
+        for (unsigned int j = 0; j < scanLocations[state->scanId].size(); ++j) {
+            if (i == j) {
+                continue;
+            }
+            if (scanLocations[state->scanId][i]->unobstructed[j] && 
+                scanLocations[state->scanId][j]->included) {
+                unobstructed_included_views[state->scanId][i].push_back(j);
+            }
+        }
+    }
+  
 }
 
 void Simulator::populateNavigable() {
@@ -282,6 +298,30 @@ void Simulator::populateNavigable() {
     double adjustedheading = M_PI/2.0 - state->heading;
     glm::vec3 camera_horizon_dir(cos(adjustedheading), sin(adjustedheading), 0.f);
     double cos_half_hfov = cos(vfov * width / height / 2.0);
+
+    for (auto i : unobstructed_included_views[state->scanId][idx]) {
+        // Check if visible between camera left and camera right
+        glm::vec3 target_dir = scanLocations[state->scanId][i]->pos - scanLocations[state->scanId][idx]->pos;
+        double rel_distance = glm::length(target_dir);
+        double tar_z = target_dir.z;
+        target_dir.z = 0.f; // project to xy plane
+        double rel_elevation = atan2(tar_z, glm::length(target_dir)) - state->elevation;
+        glm::vec3 normed_target_dir = glm::normalize(target_dir);
+        double cos_angle = glm::dot(normed_target_dir, camera_horizon_dir);
+        if (cos_angle >= cos_half_hfov) {
+            glm::vec3 pos(scanLocations[state->scanId][i]->pos);
+            double rel_heading = atan2( 
+                target_dir.x*camera_horizon_dir.y - target_dir.y*camera_horizon_dir.x, 
+                target_dir.x*camera_horizon_dir.x + target_dir.y*camera_horizon_dir.y );
+            Viewpoint v{scanLocations[state->scanId][i]->viewpointId, i, 
+                        cv::Point3f(pos[0], pos[1], pos[2]), 
+                        rel_heading, rel_elevation, rel_distance};
+            updatedNavigable.push_back(std::make_shared<Viewpoint>(v));
+        }
+    }
+    
+        
+    /*
     for (unsigned int i = 0; i < scanLocations[state->scanId].size(); ++i) {
         if (i == idx) {
             // Current location is pushed first
@@ -306,6 +346,8 @@ void Simulator::populateNavigable() {
             }
         }
     }
+    */
+
     std::sort(updatedNavigable.begin(), updatedNavigable.end(), ViewpointPtrComp());
     state->navigableLocations = updatedNavigable;
 }
@@ -407,6 +449,20 @@ void Simulator::newEpisode(const std::string& scanId,
         }
     } else {
         // Find index of selected viewpoint
+
+        auto viewpoint_map = viewpointId_to_graphId[state->scanId];
+        if (viewpoint_map.find(viewpointId) == viewpoint_map.end()) {
+            throw std::invalid_argument( "MatterSim: Could not find viewpointId: " +
+                viewpointId + ", is viewpoint id valid?" );
+        } else {
+            ix = viewpoint_map[viewpointId]; 
+            if (!scanLocations[state->scanId][ix]->included) {
+                throw std::invalid_argument( "MatterSim: ViewpointId: " +
+                    viewpointId + ", is excluded from the connectivity graph." );
+            }
+        }
+       
+        /*
         for (int i = 0; i < scanLocations[state->scanId].size(); ++i) {
             if (scanLocations[state->scanId][i]->viewpointId == viewpointId) {
                 if (!scanLocations[state->scanId][i]->included) {
@@ -417,10 +473,12 @@ void Simulator::newEpisode(const std::string& scanId,
                 break;
             }
         }
+        
         if (ix < 0) {
             throw std::invalid_argument( "MatterSim: Could not find viewpointId: " +
                     viewpointId + ", is viewpoint id valid?" );
         }
+        */
     }
     glm::vec3 pos(scanLocations[state->scanId][ix]->pos);
     Viewpoint v{scanLocations[state->scanId][ix]->viewpointId, (unsigned int)ix,
