@@ -1,9 +1,10 @@
+tasks/R2R/output/*
 ../data/objects_per_view/*
 ../data/objects_per_object/*
+build/*
 logs/*
 output/*
 models/*
-pybind11/*
 scripts/*
 sim_imgs/*
 webgl_imgs/*
