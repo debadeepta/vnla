@@ -535,7 +535,8 @@ void Simulator::makeAction(int index, double heading, double elevation) {
     // move
     if (!initialized || index < 0 || index >= state->navigableLocations.size() ){
         std::stringstream msg;
-        msg << "MatterSim: Invalid action index: " << index;
+        msg << "MatterSim: Invalid action index: " << index 
+            << " " << state->navigableLocations.size();
         throw std::domain_error( msg.str() );
     }
     state->location = state->navigableLocations[index];
