@@ -1,5 +1,6 @@
+import os
 import sys
-sys.path.append('build')
+sys.path.append('../../build')
 import MatterSim
 import time
 import math
@@ -16,11 +17,13 @@ cv2.namedWindow('displaywin')
 sim = MatterSim.Simulator()
 sim.setCameraResolution(WIDTH, HEIGHT)
 sim.setCameraVFOV(VFOV)
+#sim.setNavGraphPath(
+#    os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
 sim.init()
 
 house_id = sys.argv[1]
-view_id = sys.argv[2]
-sim.newEpisode(house_id, view_id, 0, 0)
+#view_id = sys.argv[2]
+sim.newEpisode(house_id, '', 0, 0)
 
 
 heading = 0
