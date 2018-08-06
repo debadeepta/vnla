@@ -1,0 +1,32 @@
+description: Learning to ask
+
+auth:
+  vc: msrlabs
+  cluster: eu1
+  docker_repo: philly/jobs/custom/generic-docker
+  docker_tag: py27
+  azure_config:
+    storage_account_name: kxnguyen
+    container_name: learningtoask
+
+code:
+  local_dir: $CONFIG_DIR/code
+
+data:
+  data_upload: False
+  #local_dir: data
+  remote_dir: data/learningtoask
+
+jobs:
+- name: learn_to_ask_3_queries 
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_next_optimal.json -nav_feedback sample -exp_name intent_next_optimal_3_queries_run0 -max_queries 3"
+- name: learn_to_ask_2_queries 
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_next_optimal.json -nav_feedback sample -exp_name intent_next_optimal_2_queries_run0 -max_queries 2"
+- name: learn_to_ask_1_queries 
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_next_optimal.json -nav_feedback sample -exp_name intent_next_optimal_1_queries_run0 -max_queries 1"
