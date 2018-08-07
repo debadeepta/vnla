@@ -2,7 +2,7 @@ description: Learning to ask
 
 auth:
   vc: msrlabs
-  cluster: eu1
+  cluster: sc1
   docker_repo: philly/jobs/custom/generic-docker
   docker_tag: py27
   azure_config:
@@ -13,8 +13,8 @@ code:
   local_dir: $CONFIG_DIR/code
 
 data:
-  data_upload: True
-  local_dir: data
+  data_upload: False
+  #local_dir: data
   remote_dir: data/learningtoask/v2_6
 
 jobs:
@@ -26,13 +26,13 @@ jobs:
   entry_point: tasks/R2R/train.py
   n_gpu: 1
   args: "-config configs/intent_step_by_step_v2.json -exp_name intent_step_by_step_1_step_run0 -n_subgoal_steps 1"
-  #- name: verbal_2_step_margin_2 
-  #entry_point: tasks/R2R/train.py
-  #n_gpu: 1
-  #args: "-config configs/intent_step_by_step_v2.json -exp_name intent_step_by_step_2_step_run0 -n_subgoal_steps 2 -error_margin 2.0"
-  #- name: verbal_1_step_margin_2 
-  #entry_point: tasks/R2R/train.py
-  #n_gpu: 1
-  #args: "-config configs/intent_step_by_step_v2.json -exp_name intent_step_by_step_1_step_run0 -n_subgoal_steps 1 -error_margin 2.0"
+- name: verbal_3_step 
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_step_by_step_v2.json -exp_name intent_step_by_step_2_step_run0 -n_subgoal_steps 3"
+- name: verbal_4_step 
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_step_by_step_v2.json -exp_name intent_step_by_step_1_step_run0 -n_subgoal_steps 4"
 
 

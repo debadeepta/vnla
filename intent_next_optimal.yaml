@@ -22,10 +22,6 @@ jobs:
   entry_point: tasks/R2R/train.py
   n_gpu: 1
   args: "-config configs/intent_next_optimal_v2.json -exp_name intent_next_optimal"
-- name: learn_to_ask_no_ask_backprop
-  entry_point: tasks/R2R/train.py
-  n_gpu: 1
-  args: "-config configs/intent_next_optimal_v2.json -exp_name intent_next_optimal_no_ask_backprop -backprop_ask_features 0"
 - name: random_ask
   entry_point: tasks/R2R/train.py
   n_gpu: 1
