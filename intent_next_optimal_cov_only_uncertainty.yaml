@@ -1,0 +1,26 @@
+description: Learning to ask
+
+auth:
+  vc: msrlabs
+  cluster: sc1
+  docker_repo: philly/jobs/custom/generic-docker
+  docker_tag: py27
+  azure_config:
+    storage_account_name: kxnguyen
+    container_name: learningtoask
+
+code:
+  local_dir: $CONFIG_DIR/code
+
+data:
+  data_upload: False
+  #local_dir: data
+  remote_dir: data/learningtoask/v2_6
+
+jobs:
+- name: learn_to_ask_only_uncertainty
+  entry_point: tasks/R2R/train.py
+  n_gpu: 1
+  args: "-config configs/intent_next_optimal_cov_v2.json -exp_name intent_next_optimal --deviate_threshold 100 -unmoved_threshold 100"
+
+

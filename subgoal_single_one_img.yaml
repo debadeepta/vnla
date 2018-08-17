@@ -1,0 +1,29 @@
+description: Learning to ask
+
+auth:
+  vc: msrlabs
+  cluster: eu1
+  docker_repo: philly/jobs/custom/generic-docker
+  docker_tag: py27
+  azure_config:
+    storage_account_name: kxnguyen
+    container_name: learningtoask
+
+code:
+  local_dir: $CONFIG_DIR/code
+
+data:
+  data_upload: False
+  #local_dir: data
+  remote_dir: data/learningtoask/v2_6
+
+jobs:
+- name: subgoal_obj_two_views 
+  entry_point: tasks/R2R/subgoal_train.py
+  n_gpu: 1
+  args: "-config configs/subgoal.json -exp subgoal_obj_two_views" 
+- name: subgoal_obj_two_views_cov 
+  entry_point: tasks/R2R/subgoal_train.py
+  n_gpu: 1
+  args: "-config configs/subgoal_cov.json -exp subgoal_obj_two_views_cov"
+
