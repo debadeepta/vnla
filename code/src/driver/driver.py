@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append('../../build')
+sys.path.append('build')
 import MatterSim
 import time
 import math
@@ -17,13 +17,17 @@ cv2.namedWindow('displaywin')
 sim = MatterSim.Simulator()
 sim.setCameraResolution(WIDTH, HEIGHT)
 sim.setCameraVFOV(VFOV)
-#sim.setNavGraphPath(
-#    os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
+sim.setNavGraphPath(os.path.join('../data', 'connectivity'))
 sim.init()
 
-house_id = sys.argv[1]
-#view_id = sys.argv[2]
-sim.newEpisode(house_id, '', 0, 0)
+if len(sys.argv) > 1:
+    house_id = sys.argv[1]
+else:
+    house_id = '17DRP5sb8fy'
+
+view_id = sys.argv[2] if len(sys.argv) > 2 else ''
+heading = float(sys.argv[3]) if len(sys.argv) > 3 else 0
+sim.newEpisode(house_id, view_id, heading, 0)
 
 
 heading = 0
@@ -32,6 +36,8 @@ location = 0
 ANGLEDELTA = 5 * math.pi / 180
 
 vp_id = None
+heading_id = heading
+elevation_id = elevation
 
 while True:
     sim.makeAction(location, heading, elevation)
@@ -40,9 +46,13 @@ while True:
     elevation = 0
     state = sim.getState()
 
-    if state.location.viewpointId != vp_id:
+    if state.location.viewpointId != vp_id or abs(state.heading - heading_id) > 1e-6 \
+       or abs(state.elevation - elevation_id) > 1e-6:
+        print abs(state.heading - heading_id)
         vp_id = state.location.viewpointId
-        print vp_id, state.location.point
+        heading_id = state.heading
+        elevation_id = state.elevation
+        print vp_id, heading_id, elevation_id, state.location.point
 
     locations = state.navigableLocations
     im = state.rgb
