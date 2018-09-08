@@ -18,6 +18,7 @@ sim = MatterSim.Simulator()
 sim.setCameraResolution(WIDTH, HEIGHT)
 sim.setCameraVFOV(VFOV)
 sim.setNavGraphPath(os.path.join('../data', 'connectivity'))
+sim.setDiscretizedViewingAngles(True)
 sim.init()
 
 if len(sys.argv) > 1:
