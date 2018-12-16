@@ -5,5 +5,8 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 ![Concept](example.png)
 
 
+1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
+2. Setup simulators. 
+3. Run experiments. 
 
-
+Please create Github issues or email kxnguyen@cs.umd.edu for any questions or feedback. 
