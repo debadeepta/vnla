@@ -9,4 +9,4 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 2. Setup simulators. 
 3. Run experiments. 
 
-Please create issues or email kxnguyen@cs.umd.edu for any questions or feedback. 
+Please create Github issues or email kxnguyen@cs.umd.edu for any questions or feedback. 
