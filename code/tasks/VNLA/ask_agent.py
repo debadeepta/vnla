@@ -149,7 +149,6 @@ class AskAgent(BaseAgent):
     def _should_ask(self, ended, q):
         return not ended and q == self.ask_actions.index('ask')
 
-    #@profile
     def rollout(self):
         # Reset environment
         obs = self.env.reset(self.is_eval)

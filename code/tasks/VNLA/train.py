@@ -21,10 +21,8 @@ from scipy import stats
 from utils import read_vocab,write_vocab,build_vocab,Tokenizer,padding_idx,timeSince
 from env import R2RBatch
 from model import AttentionSeq2SeqModel
-from agent import Seq2SeqAgent
-from ask_agent import AskSeq2SeqAgent
-from step_ask_agent import StepByStepAskSeq2SeqAgent
-from natural_ask_agent import NaturalAskSeq2SeqAgent
+from ask_agent import AskAgent
+from verbal_ask_agent import VerbalAskAgent
 
 from eval import Evaluation
 from oracle import *
@@ -85,47 +83,45 @@ def load(path, device):
 def compute_ask_stats(traj):
     total_steps = 0
     total_agent_ask = 0
-    total_oracle_ask = 0
+    total_teacher_ask = 0
     queries_per_ep = []
     ask_pred = []
     ask_true = []
-    reg_pred = []
-    reg_true = []
 
     all_reasons = []
     loss_str = ''
 
     for i, t in enumerate(traj):
-        assert len(t['agent_ask']) == len(t['oracle_ask'])
+        assert len(t['agent_ask']) == len(t['teacher_ask'])
 
         end_step = len(t['agent_path'])
 
         pred = t['agent_ask'][:end_step]
-        true = t['oracle_ask'][:end_step]
+        true = t['teacher_ask'][:end_step]
 
         total_steps += len(true)
         total_agent_ask  += len(
-            filter(lambda x: x == AskSeq2SeqAgent.ask_actions.index('ask'), pred))
-        total_oracle_ask += len(
-            filter(lambda x: x == AskSeq2SeqAgent.ask_actions.index('ask'), true))
+            filter(lambda x: x == AskAgent.ask_actions.index('ask'), pred))
+        total_teacher_ask += len(
+            filter(lambda x: x == AskAgent.ask_actions.index('ask'), true))
         ask_pred.extend(pred)
         ask_true.extend(true)
 
         queries_per_ep.append(len(filter(lambda x: x == 1, pred)))
-        oracle_reason = t['oracle_ask_reason'][:end_step]
-        all_reasons.extend(oracle_reason)
+        teacher_reason = t['teacher_ask_reason'][:end_step]
+        all_reasons.extend(teacher_reason)
 
     loss_str += '\n *** ASK:'
     loss_str += ' queries_per_ep %.1f' % (sum(queries_per_ep) / len(queries_per_ep))
     loss_str += ', agent_ratio %.3f' %  (total_agent_ask  / total_steps)
-    loss_str += ', oracle_ratio %.3f' % (total_oracle_ask / total_steps)
+    loss_str += ', teacher_ratio %.3f' % (total_teacher_ask / total_steps)
     loss_str += ', A/P/R/F %.3f / %.3f / %.3f / %.3f' % (
                                             accuracy_score(ask_true, ask_pred),
                                             precision_score(ask_true, ask_pred),
                                             recall_score(ask_true, ask_pred),
                                             f1_score(ask_true, ask_pred))
 
-    loss_str += '\n *** ORACLE ASK:'
+    loss_str += '\n *** TEACHER ASK:'
     reason_counter = Counter(all_reasons)
     total_asks = len(filter(lambda x: x != 'pass' and x != 'exceed', all_reasons))
     loss_str += ' ask %.3f, dont_ask %.3f, ' % (
@@ -169,10 +165,8 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             loss_str = '\n * train loss: %.4f' % train_loss_avg
             train_nav_loss_avg = np.average(np.array(agent.nav_losses))
             train_ask_loss_avg = np.average(np.array(agent.ask_losses))
-            train_reg_loss_avg = np.average(np.array(agent.reg_losses))
             loss_str += ', nav loss: %.4f' % train_nav_loss_avg
             loss_str += ', ask loss: %.4f' % train_ask_loss_avg
-            loss_str += ', reg loss: %.4f' % train_reg_loss_avg
             loss_str += compute_ask_stats(traj)
 
         # Run validation
@@ -187,9 +181,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             val_nav_loss_avg = np.average(agent.nav_losses)
             loss_str += ', nav loss: %.4f' % val_nav_loss_avg
             val_ask_loss_avg = np.average(agent.ask_losses)
-            val_reg_loss_avg = np.average(agent.reg_losses)
             loss_str += ', ask loss: %.4f' % val_ask_loss_avg
-            loss_str += ', reg loss: %.4f' % val_reg_loss_avg
 
             # Get validation distance from goal under test evaluation conditions
             traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False)
@@ -353,9 +345,9 @@ def train_val(seed=None):
     print(model)
 
     if 'verbal' in hparams.advisor:
-        agent = StepByStepAskSeq2SeqAgent(model, hparams, device)
+        agent = VerbalAskAgent(model, hparams, device)
     elif hparams.advisor == 'direct':
-        agent = AskSeq2SeqAgent(model, hparams, device)
+        agent = AskAgent(model, hparams, device)
 
     return train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
           best_metrics, eval_mode)

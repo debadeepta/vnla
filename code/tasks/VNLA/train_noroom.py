@@ -22,11 +22,7 @@ from env import R2RBatch
 from model import AttentionSeq2SeqModel
 from agent import Seq2SeqAgent
 from ask_agent import AskSeq2SeqAgent
-from step_ask_agent import StepByStepAskSeq2SeqAgent
-from natural_ask_agent import NaturalAskSeq2SeqAgent
-#from subgoal_model import SubgoalModel
-#from subgoal_agent import SubgoalAgent
-#from subgoal_env import SubgoalBatch
+from verbal_ask_agent import StepByStepAskSeq2SeqAgent
 
 from eval import Evaluation
 from oracle import *

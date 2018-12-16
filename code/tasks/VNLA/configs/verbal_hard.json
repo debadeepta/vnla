@@ -1,7 +1,6 @@
 {
-    "exp_name"           : "intent_step_by_step_run0",
     "seed"               : 1,
-    "data_dir"           : "intent_based_commands_v3",
+    "data_dir"           : "asknav",
     "img_features"       : "img_features/ResNet-152-imagenet.tsv",
     "max_input_length"   : 50,
     "batch_size"         : 100,

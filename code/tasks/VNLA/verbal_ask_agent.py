@@ -20,9 +20,9 @@ from env import R2RBatch
 from utils import padding_idx
 from agent import BaseAgent
 from oracle import make_oracle
-from ask_agent import AskSeq2SeqAgent
+from ask_agent import AskAgent
 
-class VerbalAskAgent(AskSeq2SeqAgent):
+class VerbalAskAgent(AskAgent):
 
     def __init__(self, model, hparams, device):
         super(VerbalAskAgent, self).__init__(model, hparams, device,
@@ -103,9 +103,9 @@ class VerbalAskAgent(AskSeq2SeqAgent):
 
             # Mask out invalid actions
             nav_logit_mask = torch.zeros(batch_size,
-                AskSeq2SeqAgent.n_output_nav_actions(), dtype=torch.uint8, device=self.device)
+                AskAgent.n_output_nav_actions(), dtype=torch.uint8, device=self.device)
             ask_logit_mask = torch.zeros(batch_size,
-                AskSeq2SeqAgent.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
+                AskAgent.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
 
             nav_mask_indices = []
             ask_mask_indices = []

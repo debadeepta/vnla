@@ -1,3 +1,4 @@
+import sys
 
 import torch
 import torch.nn as nn
@@ -69,7 +70,6 @@ class EncoderLSTM(nn.Module):
 class Attention(nn.Module):
 
     def __init__(self, dim, coverage_dim=None):
-        '''Initialize layer.'''
         super(Attention, self).__init__()
         self.linear_in = nn.Linear(dim, dim, bias=False)
         self.sm = nn.Softmax(dim=1)
@@ -114,7 +114,6 @@ class Attention(nn.Module):
 
 
 class AskAttnDecoderLSTM(nn.Module):
-    ''' An unrolled LSTM with attention over instructions for decoding navigation actions. '''
 
     def __init__(self, hparams, agent_class, device):
 
@@ -146,7 +145,8 @@ class AskAttnDecoderLSTM(nn.Module):
         self.nav_predictor = nn.Linear(hparams.hidden_size, agent_class.n_output_nav_actions())
 
         ask_predictor_input_size = hparams.hidden_size * 2 + \
-            agent_class.n_output_nav_actions() + self.img_feature_size + hparams.budget_embed_size
+            agent_class.n_output_nav_actions() + hparams.img_feature_size + \
+            hparams.budget_embed_size
 
         ask_predictor_layers = []
         current_layer_size = ask_predictor_input_size
@@ -252,7 +252,7 @@ class AttentionSeq2SeqModel(nn.Module):
                               bidirectional=hparams.bidirectional,
                               num_layers=hparams.num_lstm_layers)
 
-        if hparams.advisor == 'verbal':
+        if 'verbal' in hparams.advisor:
             agent_class = VerbalAskAgent
         elif hparams.advisor == 'direct':
             agent_class = AskAgent

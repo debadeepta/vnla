@@ -11,7 +11,6 @@ pp = pprint.PrettyPrinter(indent=4)
 
 from env import R2RBatch
 from utils import load_datasets, load_nav_graphs, load_region_label_to_name, load_panos_to_region
-from agent import BaseAgent, StopAgent, RandomAgent, ShortestAgent
 
 
 class Evaluation(object):

@@ -24,8 +24,6 @@ csv.field_size_limit(sys.maxsize)
 
 
 class EnvBatch():
-    ''' A simple wrapper for a batch of MatterSim environments,
-        using discretized viewpoints and pretrained features '''
 
     def __init__(self, from_train_env=None, img_features=None, batch_size=100):
         if from_train_env is not None:
@@ -62,7 +60,6 @@ class EnvBatch():
             self.sims[i].newEpisode(scanId, viewpointId, heading, 0)
 
     def getStates(self):
-        ''' Get list of states augmented with precomputed image features. rgb field will be empty. '''
         feature_states = []
         for sim in self.sims:
             state = sim.getState()
@@ -75,34 +72,11 @@ class EnvBatch():
         return feature_states
 
     def makeActions(self, actions):
-        ''' Take an action using the full state dependent action interface (with batched input).
-            Every action element should be an (index, heading, elevation) tuple. '''
         for i, (index, heading, elevation) in enumerate(actions):
             self.sims[i].makeAction(index, heading, elevation)
 
-    def makeSimpleActions(self, simple_indices):
-        ''' Take an action using a simple interface: 0-forward, 1-turn left, 2-turn right, 3-look up, 4-look down.
-            All viewpoint changes are 30 degrees. Forward, look up and look down may not succeed - check state.
-            WARNING - Very likely this simple interface restricts some edges in the graph. Parts of the
-            environment may not longer be navigable. '''
-        for i, index in enumerate(simple_indices):
-            if index == 0:
-                self.sims[i].makeAction(1, 0, 0)
-            elif index == 1:
-                self.sims[i].makeAction(0,-1, 0)
-            elif index == 2:
-                self.sims[i].makeAction(0, 1, 0)
-            elif index == 3:
-                self.sims[i].makeAction(0, 0, 1)
-            elif index == 4:
-                self.sims[i].makeAction(0, 0,-1)
-            else:
-                sys.exit("Invalid simple action");
-
-
 
 class R2RBatch():
-    ''' Implements the Room to Room navigation task, using discretized viewpoints and pretrained features '''
 
     def __init__(self, hparams, split=None, tokenizer=None, from_train_env=None,
                  traj_len_estimates=None):
@@ -114,19 +88,14 @@ class R2RBatch():
         self.random.seed(hparams.seed)
 
         self.tokenizer = tokenizer
-        self.ask_for_help = hasattr(hparams, 'ask_for_help') and hparams.ask_for_help
         self.split = split
         self.batch_size = hparams.batch_size
         self.max_episode_length = hparams.max_episode_length
         self.n_subgoal_steps = hparams.n_subgoal_steps
 
-        if self.ask_for_help:
-            self.traj_len_estimates = defaultdict(list)
-        else:
-            self.traj_len_estimates = None
+        self.traj_len_estimates = defaultdict(list)
 
-        if self.ask_for_help:
-            self.query_ratio = hparams.query_ratio
+        self.query_ratio = hparams.query_ratio
 
         if hasattr(hparams, 'no_room') and hparams.no_room:
             self.no_room = hparams.no_room
@@ -134,34 +103,19 @@ class R2RBatch():
         if self.split is not None:
             self.load_data(load_datasets([split], hparams.data_path))
 
-        if self.ask_for_help:
-            if traj_len_estimates is None:
-                for k in self.traj_len_estimates:
-                    self.traj_len_estimates[k] = min(self.max_episode_length,
-                        float(np.average(self.traj_len_estimates[k]) +
-                        1.95 * scipy.stats.sem(self.traj_len_estimates[k])))
-                    assert not math.isnan(self.traj_len_estimates[k])
-            else:
-                """
-                errors = []
-                for item in self.data:
-                    k = self.make_traj_estimate_key(item)
-                    oracle_len = float(np.average([len(p) for p in item['trajectories']]))
-                    if k in traj_len_estimates:
-                        errors.append(abs(oracle_len - traj_len_estimates[k]))
-                    else:
-                        errors.append(abs(oracle_len - self.max_episode_length))
+        if traj_len_estimates is None:
+            for k in self.traj_len_estimates:
+                self.traj_len_estimates[k] = min(self.max_episode_length,
+                    float(np.average(self.traj_len_estimates[k]) +
+                    1.95 * scipy.stats.sem(self.traj_len_estimates[k])))
+                assert not math.isnan(self.traj_len_estimates[k])
+        else:
 
-                print(np.average(errors), np.std(errors))
-                """
-
-                for k in self.traj_len_estimates:
-                    if k in traj_len_estimates:
-                        self.traj_len_estimates[k] = traj_len_estimates[k]
-                    else:
-                        # If (start_region, end_region) not in training set, use max_episode_length (worst case)
-                        self.traj_len_estimates[k] = self.max_episode_length
-
+            for k in self.traj_len_estimates:
+                if k in traj_len_estimates:
+                    self.traj_len_estimates[k] = traj_len_estimates[k]
+                else:
+                    self.traj_len_estimates[k] = self.max_episode_length
 
     def make_traj_estimate_key(self, item):
         if hasattr(self, 'no_room') and self.no_room:
@@ -180,27 +134,10 @@ class R2RBatch():
         self.scans = set()
         for item in data:
             self.scans.add(item['scan'])
-            if self.ask_for_help:
-                key = self.make_traj_estimate_key(item)
-                self.traj_len_estimates[key].extend(
-                    len(t) for t in item['trajectories'])
+            key = self.make_traj_estimate_key(item)
+            self.traj_len_estimates[key].extend(
+                len(t) for t in item['trajectories'])
 
-            """
-            if self.split == 'train':
-                j = 0
-                for instr in item['instructions']:
-                    for dist, path, traj in zip(item['distances'], item['paths'], item['trajectories']):
-                        new_item = dict(item)
-                        del new_item['instructions']
-                        new_item['instr_id'] = '%s_%d' % (item['path_id'], j)
-                        new_item['instruction'] = instr
-                        new_item['distances'] = [dist]
-                        new_item['paths'] = [path]
-                        new_item['trajectories'] = [traj]
-                        self.data.append(new_item)
-                        j += 1
-            else:
-            """
             for j,instr in enumerate(item['instructions']):
                 new_item = dict(item)
                 del new_item['instructions']
@@ -231,8 +168,6 @@ class R2RBatch():
         self.scans = scans
 
     def reset_epoch(self):
-        ''' Reset the data index to beginning of epoch. Primarily for testing.
-            You must still call reset() for a new episode. '''
         self.ix = 0
 
     def _get_obs(self):
@@ -254,9 +189,8 @@ class R2RBatch():
                 'goal_viewpoints' : [path[-1] for path in item['paths']],
                 'init_viewpoint' : item['paths'][0][0]
             })
-            if self.ask_for_help:
-                obs[-1]['max_queries'] = self.max_queries_constraints[i]
-                obs[-1]['traj_len'] = self.traj_lens[i]
+            obs[-1]['max_queries'] = self.max_queries_constraints[i]
+            obs[-1]['traj_len'] = self.traj_lens[i]
             if 'instr_encoding' in item:
                 obs[-1]['instr_encoding'] = item['instr_encoding']
         return obs
@@ -267,7 +201,6 @@ class R2RBatch():
         frac_max_queries = max_queries - int_max_queries
         return int_max_queries + (self.random.random() < frac_max_queries)
 
-    #@profile
     def reset(self, is_eval):
         ''' Load a new minibatch / episodes. '''
         self._next_minibatch()
@@ -278,25 +211,23 @@ class R2RBatch():
         self.instructions = [item['instruction'] for item in self.batch]
         self.env.newEpisodes(scanIds, viewpointIds, headings)
 
-        if self.ask_for_help:
-            self.max_queries_constraints = [None] * self.batch_size
-            self.traj_lens = [None] * self.batch_size
-            for i, item in enumerate(self.batch):
-                if is_eval:
-                    # If eval use expected length between start_region and end_region
-                    key = self.make_traj_estimate_key(item)
-                    traj_len_estimate = self.traj_len_estimates[key]
-                else:
-                    # If train use average oracle length
-                    traj_len_estimate = sum(len(t)
-                        for t in item['trajectories']) / len(item['trajectories'])
-                self.traj_lens[i] = min(self.max_episode_length, int(round(traj_len_estimate)))
-                self.max_queries_constraints[i] = self._calculate_max_queries(self.traj_lens[i])
-                assert not math.isnan(self.max_queries_constraints[i])
+        self.max_queries_constraints = [None] * self.batch_size
+        self.traj_lens = [None] * self.batch_size
+        for i, item in enumerate(self.batch):
+            if is_eval:
+                # If eval use expected length between start_region and end_region
+                key = self.make_traj_estimate_key(item)
+                traj_len_estimate = self.traj_len_estimates[key]
+            else:
+                # If train use average oracle length
+                traj_len_estimate = sum(len(t)
+                    for t in item['trajectories']) / len(item['trajectories'])
+            self.traj_lens[i] = min(self.max_episode_length, int(round(traj_len_estimate)))
+            self.max_queries_constraints[i] = self._calculate_max_queries(self.traj_lens[i])
+            assert not math.isnan(self.max_queries_constraints[i])
         return self._get_obs()
 
     def step(self, actions):
-        ''' Take action (same interface as makeActions) '''
         self.env.makeActions(actions)
         return self._get_obs()
 
