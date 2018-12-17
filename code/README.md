@@ -10,7 +10,6 @@ The following instructions assume you **use our recommended method to install Py
 
 ### Install Matterport3D simulator
 
-The Matterport3D simulator is the navigation environment of this work. 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. Training and testing models do not require running the simulator in graphics mode. However, running in graphics mode is still useful for debugging and visualizing the agent behavior. 
 
 To test whether you have sucessfully build the simulator, inside the home directory of the Matterport3DSimulator repo, run
