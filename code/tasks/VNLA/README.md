@@ -5,7 +5,7 @@ Scripts for reproducing results in the paper are in `scripts`. All scripts shoul
 $ cd scripts
 ```
 
-You can run a script without arguments to display its usage. For exapmle,
+You can run a script without arguments to display its usage. For example,
 
 ```
 $ bash train_main_results.sh
