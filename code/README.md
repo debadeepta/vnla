@@ -58,7 +58,7 @@ Test whether the build was sucessful
 $ python
 >> import sys
 >> sys.path.append('build')
->> import MatterSim``
+>> import MatterSim
 ```
 
 
