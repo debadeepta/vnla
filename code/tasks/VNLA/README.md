@@ -1,5 +1,5 @@
 
-Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside this directory. 
+Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside the directory. 
 
 ```
 $ cd scripts
