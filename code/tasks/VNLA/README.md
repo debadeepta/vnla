@@ -1,3 +1,28 @@
+
+Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside this directory. 
+
+```
+$ cd scripts
+```
+
+You can run a script without arguments to display its usage. For exapmle,
+
+```
+$ bash train_main_results.sh
+```
+
+### Main results
+
+Train a model 
+```
+$ bash train_main_results.sh [none|first|random|learned|teacher]
+```
+
+Evaluate a model
+```
+$ bash eval_main_results.sh [none|first|random|learned|teacher] [seen|unseen]
+```
+
 ### Train models
 
 Training configurations for models in the paper are specified in `task/R2R/configs/v3`. 
