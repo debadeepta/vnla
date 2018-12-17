@@ -4,7 +4,7 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 
 ![Concept](example.png)
 
-0. CLone this repo `git clone git@github.com:debadeepta/learningtoask.git`. 
+0. Clone this repo `git clone git@github.com:debadeepta/learningtoask.git`. 
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
 2. [Setup simulators](https://github.com/debadeepta/learningtoask/tree/master/code). 
 3. Run experiments. 
