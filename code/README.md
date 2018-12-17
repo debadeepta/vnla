@@ -62,6 +62,8 @@ $ python
 
 ### Explore the environment
 
+*Make sure you are able to run the demo in the Matterport3D repo.*
+
 Link to the Matterport3D Dataset, which should be structured as `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg`:
 ```
 $ ln -s <Matterdata> data
