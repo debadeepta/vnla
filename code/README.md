@@ -22,7 +22,9 @@ $ python
 ```
 
 **Common errors**
-1. `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. While compiling the simulator, instead of 
+1. `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. 
+
+While compiling the simulator, instead of 
 ```
 $ cmake ..
 ```
