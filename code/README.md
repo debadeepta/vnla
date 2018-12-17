@@ -1,5 +1,5 @@
 
-This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). We assume that you are in this directory when executing any of the below code snippets. 
+This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). We assume that **you are in this directory** when executing any of the below code snippets. 
 
 ### System requirements:
 * Python 2.7.15
