@@ -60,7 +60,7 @@ $ python
 >> import MatterSim
 ```
 
-### Explore the environment
+### Explore environments
 
 *Make sure you are able to run the demo in the Matterport3D repo.*
 
