@@ -1,14 +1,14 @@
 
 This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Except nothing else is specified, any of the below code snippets should be executed in this directory. 
 
-### System requirements:
+### 0. System requirements:
 * Python 2.7.15
 * PyTorch 0.4.1 
 
 We recommend installing via [Anaconda with Python 2.7](https://www.anaconda.com/download/#linux). 
 The following instructions assume you **use our recommended method to install Python and PyTorch**. 
 
-### Install Matterport3D simulator
+### 1. Install Matterport3D simulator
 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. Training and testing our models do not require running the simulator in graphics mode. However, running in graphics mode is still useful for debugging and visualizing the agent behavior. 
 
@@ -41,7 +41,7 @@ $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages
 ```
 where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
 
-### Build simulator
+### 2. Build simulator
 
 Install dependencies
 ```
@@ -60,7 +60,7 @@ $ python
 >> import MatterSim
 ```
 
-### Explore environments
+### 3. Explore environments (optional)
 
 *Make sure you are able to run the demo in the Matterport3D repo.*
 
