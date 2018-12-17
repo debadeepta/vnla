@@ -10,12 +10,12 @@ The following instructions assume you **use our recommended method to install Py
 
 ### 1. Download Matterport3D dataset
 
-You have to request access to the dataset [here](https://niessner.github.io/Matterport/). 
+Request access to the dataset [here](https://niessner.github.io/Matterport/). 
 Training and testing our models do not require running the simulator in graphics mode. So you only need to download the `house_segmentations` of the dataset. Unzip the files so that `<Matterdata>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
 
 Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
 
-### 1. Install Matterport3D simulator
+### 2. Install Matterport3D simulator
 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
 ```
@@ -46,7 +46,7 @@ $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages
 ```
 where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
 
-### 2. Build simulator
+### 3. Build simulator
 
 Install dependencies
 ```
@@ -65,7 +65,7 @@ $ python
 >> import MatterSim
 ```
 
-### 3. Explore environments (optional)
+### 4. Explore environments (optional)
 
 *Make sure you are able to run the demo in the Matterport3D repo.*
 
