@@ -45,7 +45,7 @@ where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's 
 
 Install dependencies
 ```
-$ sudo apt install -y libopencv-dev python-opencv freeglut3 freeglut3-dev libglm-dev libjsoncpp-dev     doxygen libosmesa6-dev libosmesa6 libglew-dev     
+$ sudo apt install -y libopencv-dev python-opencv freeglut3 freeglut3-dev libglm-dev libjsoncpp-dev doxygen libosmesa6-dev libosmesa6 libglew-dev     
 ```
 
 Then build the simulator
