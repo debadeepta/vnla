@@ -8,11 +8,16 @@ This directory is extended from [Peter Anderson's Matterport3DSimulator repo](ht
 We recommend installing via [Anaconda with Python 2.7](https://www.anaconda.com/download/#linux). 
 The following instructions assume you **use our recommended method to install Python and PyTorch**. 
 
+### 1. Download Matterport3D dataset
+
+You have to request access to the dataset [here](https://niessner.github.io/Matterport/). 
+Training and testing our models do not require running the simulator in graphics mode. So you only need to download the `house_segmentations` of the dataset. Unzip the files so that `<Matterdata>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
+
+Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
+
 ### 1. Install Matterport3D simulator
 
-Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. Training and testing our models do not require running the simulator in graphics mode. However, running in graphics mode is still useful for debugging and visualizing the agent behavior. 
-
-To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
+Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
 ```
 $ python
 >> import sys
