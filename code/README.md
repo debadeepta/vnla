@@ -60,7 +60,22 @@ $ python
 >> import MatterSim
 ```
 
+### Explore the environment
 
+Link to the Matterport3D Dataset, which should be structured as `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg`:
+```
+$ ln -s <Matterdata> data
+```
+Then run the driver:
+```
+$ python src/driver/driver.py [envID] [viewpointID] [init_heading]
+```
+
+For example:
+
+```
+$ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6179938779914944
+```
 
 
 
