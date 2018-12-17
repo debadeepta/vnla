@@ -22,7 +22,7 @@ $ python
 ```
 
 **Common errors**
-1. `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. 
+* `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. 
 
 While compiling the simulator, instead of 
 ```
@@ -35,7 +35,7 @@ $ cmake -DPYTHON_EXECUTABLE:FILEPATH=$(which python) ..
 ```
 to tell `cmake` where Python is installed. 
 
-2. `OpenCV does not support OpenGL`: you may have to install OpenCV from source with OpenGL support. Follow [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/), then link `/build/lib/cv2.so` to you your Anaconda site-packages directory:
+* `OpenCV does not support OpenGL`: you may have to install OpenCV from source with OpenGL support. Follow [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/), then link `/build/lib/cv2.so` to you your Anaconda site-packages directory:
 ```
 $ rm $ANACONDA_HOME/lib/python2.7/site-packages/cv2.so
 $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages/cv2.so
