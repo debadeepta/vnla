@@ -41,7 +41,7 @@ Train an agent with subgoals:
 $ bash train_subgoal_effects.sh subgoal
 ```
 
-Evaluate the agent without subgoals on `test unseen` (second row, third column of the table):
+Evaluate the agent with a direct advisor on `test unseen` (second row, third column of the table):
 ```
 $ bash eval_subgoal_effects.sh direct_subgoal unseen
 ```
