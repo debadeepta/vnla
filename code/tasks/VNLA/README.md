@@ -15,14 +15,33 @@ Example: bash train_main_results.sh learned 0
 
 ### Main results
 
-Train a model 
+This section helps you reproduce **Table 2** in our paper. 
+
+For example, train an agent with a `random` help-requesting policy
+
 ```
-$ bash train_main_results.sh [none|first|random|learned|teacher]
+$ bash train_main_results.sh random
 ```
 
-Evaluate a model
+Evaluate the agent after it is trained on `test seen`
 ```
-$ bash eval_main_results.sh [none|first|random|learned|teacher] [seen|unseen]
+$ bash eval_main_results.sh random seen
+```
+
+### Subgoal effects
+
+This section helps you reproduce **Table 3** in our paper. 
+
+Although the table has three rows, you only need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
+
+Train an agent with subgoals:
+```
+$ bash train_subgoal_effects.sh subgoal
+```
+
+Evaluate the agent without subgoals on `test unseen` (second row, third column of the table):
+```
+$ bash eval_subgoal_effects.sh direct_subgoal unseen
 ```
 
 
