@@ -23,15 +23,16 @@ class Evaluation(object):
         self.graphs = {}
         self.distances = {}
 
+        self.no_room = hasattr(hparams, 'no_room') and hparams.no_room
         if splits:
-            self.load_data(load_datasets(splits, data_path))
+            self.load_data(load_datasets(splits, data_path,
+                prefix='noroom' if hparams.no_room else 'asknav'))
 
         self.region_label_to_name = load_region_label_to_name()
         self.panos_to_region = {}
         for scan in self.scans:
             self.panos_to_region[scan] = load_panos_to_region(scan, self.region_label_to_name)
 
-        self.no_room = hasattr(hparams, 'no_room') and hparams.no_room
 
     def load_data(self, data):
         self.gt = {}

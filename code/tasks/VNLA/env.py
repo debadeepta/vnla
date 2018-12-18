@@ -101,7 +101,8 @@ class R2RBatch():
             self.no_room = hparams.no_room
 
         if self.split is not None:
-            self.load_data(load_datasets([split], hparams.data_path))
+            self.load_data(load_datasets([split], hparams.data_path,
+                prefix='noroom' if self.no_room else 'asknav'))
 
         if traj_len_estimates is None:
             for k in self.traj_len_estimates:

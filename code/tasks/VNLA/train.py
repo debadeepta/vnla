@@ -271,7 +271,8 @@ def setup(seed=None):
                     splits=['train'],
                     min_count=hparams.min_word_count,
                     max_length=hparams.max_input_length,
-                    split_by_spaces=hparams.split_by_spaces),
+                    split_by_spaces=hparams.split_by_spaces,
+                    prefix='noroom' if hparams.no_room else 'asknav'),
             train_vocab_path)
 
 def train_val(seed=None):

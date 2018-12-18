@@ -61,7 +61,7 @@ def load_region_map(scan):
             region_map[view] = region
     return region_map
 
-def load_datasets(splits, path, prefix='asknav'):
+def load_datasets(splits, path, prefix=''):
     data = []
     for split in splits:
         with open(os.path.join(path, prefix + '_%s.json' % split)) as f:
@@ -131,11 +131,12 @@ class Tokenizer(object):
 
         return encoding
 
-def build_vocab(path, splits, min_count, max_length, start_vocab=base_vocab, split_by_spaces=False):
-    ''' Build a vocab, starting with base vocab containing a few useful tokens. '''
+def build_vocab(path, splits, min_count, max_length, start_vocab=base_vocab,
+    split_by_spaces=False, prefix=''):
+
     count = Counter()
     t = Tokenizer(None, max_length)
-    data = load_datasets(splits, path)
+    data = load_datasets(splits, path, prefix=prefix)
     for item in data:
         for instr in item['instructions']:
             if split_by_spaces:

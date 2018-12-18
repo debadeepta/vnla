@@ -6,13 +6,13 @@ cd ../
 
 exp_name=$1
 split=$2
+device=${3:-0}
 
 config_file="configs/verbal_hard.json"
 output_dir="main_$exp_name"
 
 extra=""
 model_name="${output_dir}_nav_sample_ask_teacher"
-eval_extra="-load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_${split}.ckpt -multi_seed 1"
 
 if [ "$exp_name" == "none" ]
 then
@@ -30,17 +30,17 @@ elif [ "$exp_name" == "learned" ]
 then
   extra=""
 else
-  echo "Usage: bash eval_main_results.sh [none|first|random|teacher|learned] [seen|unseen] "
-  echo "Example: bash eval_main_results.sh learned seen"
+  echo "Usage: bash eval_main_results.sh [none|first|random|teacher|learned] [seen|unseen] [gpu_id]"
+  echo "Example: bash eval_main_results.sh learned seen 0"
   exit
 fi
 
 extra="$extra -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_${split}.ckpt -multi_seed 1"
 
 
-command="python train.py -config $config_file -exp $output_dir $extra"
+command="python train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command
-$command
+#$command
 
 
 
