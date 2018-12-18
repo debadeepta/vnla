@@ -13,6 +13,8 @@ Usage: bash train_main_results.sh [none|first|random|teacher|learned] [gpu_id]
 Example: bash train_main_results.sh learned 0
 ```
 
+**NOTE**: you may not get exactly the numbers reported in the paper due to different types of GPU models/CUDA/cuDNN having different implementations. However, the difference should not be significant. 
+
 ### Main results
 
 This section helps you reproduce **Table 2** in our paper. 
