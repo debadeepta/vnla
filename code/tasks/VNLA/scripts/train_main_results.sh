@@ -5,6 +5,7 @@ source define_vars.sh
 cd ../
 
 exp_name=$1
+device=${2:-0}
 
 config_file="configs/verbal_hard.json"
 output_dir="main_$exp_name"
@@ -27,12 +28,12 @@ elif [ "$exp_name" == "learned" ]
 then
   extra=""
 else
-  echo "Usage: bash train_main_results.sh [none|first|random|teacher|learned]"
-  echo "Example: bash train_main_results.sh learned"
+  echo "Usage: bash train_main_results.sh [none|first|random|teacher|learned] [gpu_id]"
+  echo "Example: bash train_main_results.sh learned 0"
   exit
 fi
 
-command="python train.py -config $config_file -exp $output_dir $extra"
+command="python train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command
 $command
 
