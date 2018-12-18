@@ -1,39 +1,47 @@
-### Train models
 
-Training configurations for models in the paper are specified in `task/R2R/configs/v3`. 
-
-Go to `tasks/R2R`
-```
-$ cd tasks/R2R
-```
-
-Train a `LearnToAsk` agent with the `NonVerbal` oracle
-```
-$ python train.py -config configs/v3/intent_next_optimal_cov_v3.json -exp v3_learn_to_ask 
+Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside the directory. 
 
 ```
-
-Train a `RandomAsk` agent with the `NonVerbal` oracle
-```
-$ python train.py -config configs/v3/intent_next_optimal_cov_v3.json -exp v3_random_ask -random_ask 1
-
+$ cd scripts
 ```
 
-Similarly, you can train other agents with `-no_ask 1`, `-ask_first 1`, `-oracle_ask 1`.
+You can run a script without arguments to display its usage. For example,
 
-
-### Evaluate models
-
-Evaluate a pretrained `RandomAsk` agent with the `NonVerbal` oracle
 ```
-$ python train.py -config configs/v3/intent_next_optimal_cov_v3.json \
-> -exp v3_oracle_ask \
-> -load_path output/v3_oracle_ask_nav_sample_ask_teacher/snapshots/v3_oracle_ask_nav_sample_ask_teacher_val_seen.ckpt \
-> -multi_seed 1 \
-> -error 2
+$ bash train_main_results.sh
+Usage: bash train_main_results.sh [none|first|random|teacher|learned] [gpu_id]
+Example: bash train_main_results.sh learned 0
 ```
 
-The agent will be evaluated with multiple random seeds (because there is randomness in computing asking budget).
+### Main results
 
-The `-error` flag controls the radius of the region surrounding the goal viewpoint, where the agent will succeed at its task if it steps inside. 
+This section helps you reproduce **Table 2** in our paper. 
+
+For example, train an agent with a `random` help-requesting policy
+
+```
+$ bash train_main_results.sh random
+```
+
+Evaluate the agent after it is trained on `test seen`
+```
+$ bash eval_main_results.sh random seen
+```
+
+### Subgoal effects
+
+This section helps you reproduce **Table 3** in our paper. 
+
+Although the table has three rows, you only need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
+
+Train an agent with subgoals:
+```
+$ bash train_subgoal_effects.sh subgoal
+```
+
+Evaluate the agent without subgoals on `test unseen` (second row, third column of the table):
+```
+$ bash eval_subgoal_effects.sh direct_subgoal unseen
+```
+
 
