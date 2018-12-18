@@ -9,8 +9,8 @@ You can run a script without arguments to display its usage. For example,
 
 ```
 $ bash train_main_results.sh
-Usage: bash train_main_results.sh [none|first|random|teacher|learned]
-Example: bash train_main_results.sh learned
+Usage: bash train_main_results.sh [none|first|random|teacher|learned] [gpu_id]
+Example: bash train_main_results.sh learned 0
 ```
 
 ### Main results
