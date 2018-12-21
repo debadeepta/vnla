@@ -34,7 +34,7 @@ $ bash eval_main_results.sh random seen
 
 This section helps you reproduce **Table 3** in our paper. 
 
-Although the table has three rows, you only need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
+You need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
 
 Train an agent with subgoals:
 ```
@@ -46,4 +46,29 @@ Evaluate the agent with a direct advisor on `test unseen` (second row, third col
 $ bash eval_subgoal_effects.sh direct_subgoal unseen
 ```
 
+### No room types
 
+This section helps you reproduce **Table 4* in our paper. 
+
+You need to train two agents on the `noroom` dataset: one with a `random` help-requesting policy and one with a `learned` help-requesting policy. Evaluating these two agents generating results in the first two rows of the table. 
+
+Train the `random` agent
+```
+$ bash train_noroom.sh noroom_random
+```
+
+and evaluate it
+
+```
+$ bash eval_noroom.sh noroom_random
+```
+
+The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. To train this agent, run
+```
+$ bash train_main_results.sh learned
+```
+
+Evaluate this agent
+```
+$ bash eval_noroom.sh asknav_learned
+```
