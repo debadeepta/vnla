@@ -19,7 +19,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from scipy import stats
 
 from utils import read_vocab,write_vocab,build_vocab,Tokenizer,padding_idx,timeSince
-from env import R2RBatch
+from env import VNLABatch
 from model import AttentionSeq2SeqModel
 from ask_agent import AskAgent
 from verbal_ask_agent import VerbalAskAgent
@@ -272,7 +272,8 @@ def setup(seed=None):
                     min_count=hparams.min_word_count,
                     max_length=hparams.max_input_length,
                     split_by_spaces=hparams.split_by_spaces,
-                    prefix='noroom' if hparams.no_room else 'asknav'),
+                    prefix='noroom' if hasattr(hparams, 'no_room') and
+                           hparams.no_room else 'asknav'),
             train_vocab_path)
 
 def train_val(seed=None):
@@ -290,6 +291,8 @@ def train_val(seed=None):
         ckpt = load(hparams.load_path, device)
         start_iter = ckpt['iter']
     else:
+        if hasattr(hparams, 'load_path') and hasattr(hparams, 'eval_only') and hparams.eval_only:
+            sys.exit('load_path %s does not exist!' % hparams.load_path)
         ckpt = None
         start_iter = 0
     end_iter = hparams.n_iters
@@ -308,7 +311,7 @@ def train_val(seed=None):
     else:
         vocab = read_vocab([train_vocab_path])
     tok = Tokenizer(vocab=vocab, encoding_length=hparams.max_input_length)
-    train_env = R2RBatch(hparams, split='train', tokenizer=tok)
+    train_env = VNLABatch(hparams, split='train', tokenizer=tok)
 
     # Create validation environments
     val_splits = ['val_seen', 'val_unseen']
@@ -320,7 +323,7 @@ def train_val(seed=None):
             val_splits = ['test_seen']
         end_iter = start_iter + hparams.log_every
 
-    val_envs = { split: (R2RBatch(hparams, split=split, tokenizer=tok,
+    val_envs = { split: (VNLABatch(hparams, split=split, tokenizer=tok,
         from_train_env=train_env, traj_len_estimates=train_env.traj_len_estimates),
         Evaluation(hparams, [split], hparams.data_path)) for split in val_splits}
 

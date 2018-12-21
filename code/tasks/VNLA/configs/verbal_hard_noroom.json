@@ -35,7 +35,7 @@
     "reg_embed_size"     : 64,
     "num_lstm_layers"    : 1,
     "backprop_ask_features" : 0,
-    "error_margin"       : 2.0,
+    "success_radius"       : 2.0,
     "coverage_size"      : 10,
     "n_subgoal_steps"    : 4,
     "no_room"            : 1

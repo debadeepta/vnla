@@ -9,14 +9,13 @@ import numpy as np
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
-from env import R2RBatch
 from utils import load_datasets, load_nav_graphs, load_region_label_to_name, load_panos_to_region
 
 
 class Evaluation(object):
 
     def __init__(self, hparams, splits, data_path):
-        self.error_margin = hparams.error_margin
+        self.success_radius = hparams.success_radius
         self.splits = splits
 
         self.scans = set()
@@ -26,7 +25,7 @@ class Evaluation(object):
         self.no_room = hasattr(hparams, 'no_room') and hparams.no_room
         if splits:
             self.load_data(load_datasets(splits, data_path,
-                prefix='noroom' if hparams.no_room else 'asknav'))
+                prefix='noroom' if self.no_room else 'asknav'))
 
         self.region_label_to_name = load_region_label_to_name()
         self.panos_to_region = {}
@@ -123,11 +122,11 @@ class Evaluation(object):
             'steps': np.average(self.scores['trajectory_steps']),
             'length': np.average(self.scores['trajectory_lengths'])
         }
-        is_success = [(instr_id, d < self.error_margin) for d, instr_id
+        is_success = [(instr_id, d < self.success_radius) for d, instr_id
             in zip(self.scores['nav_errors'], self.scores['instr_id'])]
-        num_successes = len([i for i in self.scores['nav_errors'] if i < self.error_margin])
+        num_successes = len([i for i in self.scores['nav_errors'] if i < self.success_radius])
         score_summary['success_rate'] = float(num_successes)/float(len(self.scores['nav_errors']))
-        oracle_successes = len([i for i in self.scores['oracle_errors'] if i < self.error_margin])
+        oracle_successes = len([i for i in self.scores['oracle_errors'] if i < self.success_radius])
         score_summary['oracle_rate'] = float(oracle_successes)/float(len(self.scores['oracle_errors']))
         if not self.no_room:
             score_summary['room_success_rate'] = float(sum(self.scores['room_successes'])) / \

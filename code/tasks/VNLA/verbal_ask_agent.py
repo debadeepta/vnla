@@ -16,7 +16,6 @@ import torch.distributions as D
 from torch import optim
 import torch.nn.functional as F
 
-from env import R2RBatch
 from utils import padding_idx
 from agent import BaseAgent
 from oracle import make_oracle

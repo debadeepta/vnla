@@ -76,7 +76,7 @@ class EnvBatch():
             self.sims[i].makeAction(index, heading, elevation)
 
 
-class R2RBatch():
+class VNLABatch():
 
     def __init__(self, hparams, split=None, tokenizer=None, from_train_env=None,
                  traj_len_estimates=None):
@@ -97,8 +97,7 @@ class R2RBatch():
 
         self.query_ratio = hparams.query_ratio
 
-        if hasattr(hparams, 'no_room') and hparams.no_room:
-            self.no_room = hparams.no_room
+        self.no_room = hasattr(hparams, 'no_room') and hparams.no_room
 
         if self.split is not None:
             self.load_data(load_datasets([split], hparams.data_path,
@@ -119,7 +118,7 @@ class R2RBatch():
                     self.traj_len_estimates[k] = self.max_episode_length
 
     def make_traj_estimate_key(self, item):
-        if hasattr(self, 'no_room') and self.no_room:
+        if self.no_room:
             key = (item['start_region_name'], item['object_name'])
         else:
             key = (item['start_region_name'], item['end_region_name'])
@@ -149,7 +148,7 @@ class R2RBatch():
         self.reset_epoch()
 
         if self.split is not None:
-            print 'R2RBatch loaded with %d instructions, using split: %s' % (
+            print 'VNLABatch loaded with %d instructions, using split: %s' % (
                 len(self.data), self.split)
 
     def _next_minibatch(self):
