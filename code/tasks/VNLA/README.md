@@ -48,7 +48,7 @@ $ bash eval_subgoal_effects.sh direct_subgoal unseen
 
 ### No room types
 
-This section helps you reproduce **Table 4* in our paper. 
+This section helps you reproduce **Table 4** in our paper. 
 
 You need to train two agents on the `noroom` dataset: one with a `random` help-requesting policy and one with a `learned` help-requesting policy. Evaluating these two agents generating results in the first two rows of the table. 
 
