@@ -75,7 +75,8 @@ $ bash eval_noroom.sh asknav_learned unseen
 
 ### Train with a different configuration
 
-1. Create a configuration file in `configs`
+1. Create a configuration file in `configs`.
+2. Set environment variables `PT_DATA_DIR` and `PT_OUTPUT_DIR`. See `scripts/define_vars.sh` for more detail. 
 2. Run `python train.py -config $CONFIG_FILE_PATH -exp $EXP_NAME`.
 
 Besides the `verbal_hard` advisor which we use in our paper, we also provide a `verbal_easy`, which does not aggregate repeated actions. 
