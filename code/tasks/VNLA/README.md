@@ -57,10 +57,10 @@ Train the `random` agent
 $ bash train_noroom.sh noroom_random
 ```
 
-and evaluate it
+and evaluate it on `test seen`
 
 ```
-$ bash eval_noroom.sh noroom_random
+$ bash eval_noroom.sh noroom_random seen
 ```
 
 The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. To train this agent, run
@@ -68,7 +68,7 @@ The third row of the table derives from evaluating the `learned` agent trained o
 $ bash train_main_results.sh learned
 ```
 
-Evaluate this agent
+Evaluate this agent on `test unseen`
 ```
-$ bash eval_noroom.sh asknav_learned
+$ bash eval_noroom.sh asknav_learned unseen
 ```
