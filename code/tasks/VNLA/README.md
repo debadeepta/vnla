@@ -13,6 +13,8 @@ Usage: bash train_main_results.sh [none|first|random|teacher|learned] [gpu_id]
 Example: bash train_main_results.sh learned 0
 ```
 
+**NOTE**: you may get results slightly different from those reported in the paper because different types of GPU models or CUDA/cuDNN versions may have different implementations. However, this should not alter the experiments' conclusions.
+
 ### Main results
 
 This section helps you reproduce **Table 2** in our paper. 
@@ -39,7 +41,7 @@ Train an agent with subgoals:
 $ bash train_subgoal_effects.sh subgoal
 ```
 
-Evaluate the agent without subgoals on `test unseen` (second row, third column of the table):
+Evaluate the agent with a direct advisor on `test unseen` (second row, third column of the table):
 ```
 $ bash eval_subgoal_effects.sh direct_subgoal unseen
 ```
