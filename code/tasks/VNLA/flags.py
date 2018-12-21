@@ -19,7 +19,7 @@ def make_parser():
         help='image embedding size')
    parser.add_argument('-max_input_length', type=int,
         help='maximum input instruction length')
-   parser.add_argument('-batch_size', type=intm
+   parser.add_argument('-batch_size', type=int,
         help='batch size (both training and evaluation)')
    parser.add_argument('-max_episode_length', type=int,
         help='maximum number of actions per epsiode')
