@@ -73,4 +73,11 @@ Evaluate this agent on `test unseen` of `noroom`
 $ bash eval_noroom.sh asknav_learned unseen
 ```
 
+### Train with a different configuration
+
+1. Create a configuration file in `configs`
+2. Run `python train.py -config $CONFIG_FILE_PATH -exp $EXP_NAME`.
+
+Besides the `verbal_hard` advisor which we use in our paper, we also provide a `verbal_easy`, which does not aggregate repeated actions. 
+
 
