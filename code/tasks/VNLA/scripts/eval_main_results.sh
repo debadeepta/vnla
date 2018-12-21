@@ -40,7 +40,7 @@ extra="$extra -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_
 
 command="python train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command
-#$command
+$command
 
 
 
