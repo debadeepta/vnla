@@ -6,7 +6,7 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 
 0. Clone this repo `git clone git@github.com:debadeepta/learningtoask.git`. 
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
-2. [Setup simulators](https://github.com/debadeepta/learningtoask/tree/master/code). 
+2. [Setup simulator](https://github.com/debadeepta/learningtoask/tree/master/code). 
 3. [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA). 
 
 Please create Github issues or email kxnguyen@cs.umd.edu for any questions or feedback. 
