@@ -73,4 +73,12 @@ Evaluate this agent on `test unseen` of `noroom`
 $ bash eval_noroom.sh asknav_learned unseen
 ```
 
+### Train with new configuration
+
+1. Set environment variables `PT_DATA_DIR` and `PT_OUTPUT_DIR` to the data directory and the output directory, respectively. See `scripts/define_vars.sh` for more detail. 
+2. Create a configuration file in `configs`. See `flags.py` for argument definitions.
+2. Run `python train.py -config $CONFIG_FILE_PATH -exp $EXP_NAME`.
+
+Besides the `verbal_hard` advisor, which we use in our paper, we also provide a `verbal_easy`, which does not aggregate repeated actions. 
+
 
