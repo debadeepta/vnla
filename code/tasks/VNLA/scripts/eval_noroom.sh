@@ -31,7 +31,7 @@ else
 fi
 
 model_name="${output_dir}_nav_sample_ask_teacher"
-extra="$extra -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_${split}.ckpt -multi_seed 1"
+extra="$extra -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_${split}.ckpt -multi_seed 1 -success_radius 2"
 
 command="python train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command

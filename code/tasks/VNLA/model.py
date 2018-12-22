@@ -128,7 +128,6 @@ class AskAttnDecoderLSTM(nn.Module):
 
         lstm_input_size = hparams.nav_embed_size + hparams.ask_embed_size + hparams.img_feature_size
 
-        self.budget_feature = hparams.budget_feature
         self.budget_embedding = nn.Embedding(hparams.max_ask_budget, hparams.budget_embed_size)
 
         self.drop = nn.Dropout(p=hparams.dropout_ratio)
@@ -175,11 +174,6 @@ class AskAttnDecoderLSTM(nn.Module):
         ask_embeds = self.ask_embedding(ask_action)
 
         lstm_inputs = [nav_embeds, ask_embeds, feature]
-
-        if self.budget_feature:
-            assert budget is not None
-            budget_embeds = self.budget_embedding(budget)
-            lstm_inputs.append(budget_embeds)
 
         concat_lstm_input = torch.cat(lstm_inputs, dim=1)
         drop = self.drop(concat_lstm_input)

@@ -92,8 +92,6 @@ def make_parser():
    parser.add_argument('-backprop_ask_features', type=int)
 
    # Budget Features
-   parser.add_argument('-budget_feature', type=int, default=1,
-        help='use current budget as a feature')
    parser.add_argument('-max_ask_budget', type=int, default=20,
         help='budget upperbound')
 

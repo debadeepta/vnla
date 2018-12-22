@@ -239,29 +239,6 @@ class VerbalAskAgent(AskAgent):
                        time_step >= ob['traj_len'] - 1:
                         ended[i] = True
 
-                    """
-                    if obs[i]['instr_id'] == '505376_0' and self.is_eval:
-                        #print [int(x * 100) / 100. for x in alpha[i].data.tolist()]
-                        instr = obs[i]['instruction'].split()
-                        tmp = []
-                        for j, x in enumerate(alpha[i].data.tolist()):
-                            try:
-                                if 0 < j + 1 <= len(instr):
-                                    key = instr[-(j + 1)]
-                                    sys.stdout.write(key + '/')
-                                value = int(math.log(x, 10) * 100) / 100.
-                                print value, ' ',
-                                if 0 < j + 1 <= len(instr):
-                                    tmp.append((value, key, j))
-                            except ValueError:
-                                print '-inf',
-                        print
-
-                        #print tmp
-                        tmp = sorted(tmp, key=lambda x: -x[0])
-                        print [x[1] for x in tmp]
-                    """
-
                 assert queries_used[i] + queries_unused[i] == ob['max_queries']
                 assert queries_unused[i] >= 0
 

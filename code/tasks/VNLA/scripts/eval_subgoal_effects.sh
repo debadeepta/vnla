@@ -33,7 +33,7 @@ fi
 
 model_name="${output_dir}_nav_sample_ask_teacher"
 command="python train.py -config $config_file -exp $output_dir $extra"
-command="$command -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_${split}.ckpt -multi_seed 1 -device $device"
+command="$command -load_path $PT_OUTPUT_DIR/$model_name/snapshots/${model_name}_val_${split}.ckpt -multi_seed 1 -success_radius 2 -device $device"
 echo $command
 $command
 

@@ -59,7 +59,6 @@ class AskAgent(BaseAgent):
         self.teacher_ask = hparams.teacher_ask if hasattr(hparams, 'teacher_ask') else 0
         self.no_ask = hparams.no_ask if hasattr(hparams, 'no_ask') else 0
 
-        self.budget_feature   = hparams.budget_feature
         self.max_input_length = hparams.max_input_length
         self.n_subgoal_steps  = hparams.n_subgoal_steps
 
