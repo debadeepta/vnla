@@ -1,5 +1,5 @@
 
-This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Except nothing else is specified, any of the below code snippets should be executed in this directory. 
+This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Unless specified, all of the code snippets below should be executed in this directory. 
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
 
@@ -28,7 +28,7 @@ $ python
 ```
 
 **Common errors**
-* `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. 
+* `ImportError: No module named MatterSim`: this will definitely happen if you use Anaconda to install Python. 
 
 While compiling the simulator, instead of 
 ```
