@@ -19,7 +19,7 @@ Training and testing our models only require downloading the `house_segmentation
 
 Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<some_folder>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
 
-You may use the script `unzip_matterport.sh` in this directory to unzip the data:
+We provide the script `unzip_matterport.sh` in this directory to help you unzip the data:
 ```
 $ bash unzip_matterport $matter_root$
 ```
