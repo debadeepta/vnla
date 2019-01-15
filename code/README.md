@@ -1,7 +1,7 @@
 
-This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Unless specified, all of the code snippets below should be executed in this directory. 
-
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
+
+This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Unless specified, all of the code snippets below should be executed in this directory. 
 
 ### 1. Install Matterport3D simulator
 
@@ -72,6 +72,4 @@ For example:
 $ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6179938779914944
 ```
 
-
-
-
+Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
