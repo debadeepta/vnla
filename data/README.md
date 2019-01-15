@@ -18,3 +18,10 @@ Request access to the dataset [here](https://niessner.github.io/Matterport/).
 Training and testing our models only require downloading the `house_segmentations` portion of the dataset. Unzip the files so that `<some_folder>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
 
 Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<some_folder>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
+
+You may use the script `unzip_matterport.sh` in this directory to unzip the data:
+```
+$ bash unzip_matterport $matter_root$
+```
+
+where `$matter_root` is the Matterport3D dataset top folder where `matter_root/v1/scans/` is located.  
