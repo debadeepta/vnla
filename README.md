@@ -13,3 +13,8 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 
 Please create Github issues or email kxnguyen@cs.umd.edu for any questions or feedback. 
 
+### Development system:	
+
+* Ubuntu 18.04 LTS
+* [Anaconda Python 2.7](https://www.anaconda.com/download/#linux)
+* [PyTorch 0.4.1](https://pytorch.org/get-started/previous-versions/)
