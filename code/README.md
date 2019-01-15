@@ -3,13 +3,6 @@ This directory is extended from [Peter Anderson's Matterport3DSimulator repo](ht
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
 
-### 0. System requirements:
-* Python 2.7.15
-* PyTorch 0.4.1 
-
-We recommend installing via [Anaconda with Python 2.7](https://www.anaconda.com/download/#linux). 
-The following instructions assume you **use our recommended method to install Python and PyTorch**. 
-
 ### 1. Install Matterport3D simulator
 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
