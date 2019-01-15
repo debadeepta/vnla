@@ -20,7 +20,7 @@ See [setup simulator](https://github.com/debadeepta/learningtoask/tree/master/co
 The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda, PyTorch and other required packages, you are good!
 
 
-### Let's run it!
+### Let's run the code!
 
 0. Clone this repo `git clone git@github.com:debadeepta/learningtoask.git`. 
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
