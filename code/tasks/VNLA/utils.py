@@ -135,7 +135,7 @@ def build_vocab(path, splits, min_count, max_length, start_vocab=base_vocab,
     split_by_spaces=False, prefix=''):
 
     count = Counter()
-    t = Tokenizer(None, max_length)
+    t = Tokenizer(None, max_length,split_by_spaces=split_by_spaces)
     data = load_datasets(splits, path, prefix=prefix)
     for item in data:
         for instr in item['instructions']:
