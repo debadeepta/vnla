@@ -10,14 +10,7 @@ Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/
 We recommend installing via [Anaconda with Python 2.7](https://www.anaconda.com/download/#linux). 
 The following instructions assume you **use our recommended method to install Python and PyTorch**. 
 
-### 1. Download Matterport3D dataset
-
-Request access to the dataset [here](https://niessner.github.io/Matterport/). 
-Training and testing our models only require downloading the `house_segmentations` portion of the dataset. Unzip the files so that `<Matterdata>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
-
-Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
-
-### 2. Install Matterport3D simulator
+### 1. Install Matterport3D simulator
 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
 ```
@@ -48,7 +41,7 @@ $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages
 ```
 where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
 
-### 3. Build simulator
+### 2. Build simulator
 
 Install dependencies
 ```
@@ -67,7 +60,7 @@ $ python
 >> import MatterSim
 ```
 
-### 4. Explore environments (optional)
+### 3. Explore environments (optional)
 
 *Make sure you are able to run the demo in the Matterport3D repo.*
 
