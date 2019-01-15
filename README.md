@@ -15,6 +15,16 @@ Please create Github issues or email kxnguyen@cs.umd.edu for any questions or fe
 
 ### Development system:	
 
-* Ubuntu 18.04 LTS
+Our instructions assume the development system has installed:
+
+* Ubuntu 18.04 LTS 
 * [Anaconda Python 2.7](https://www.anaconda.com/download/#linux)
-* [PyTorch 0.4.1](https://pytorch.org/get-started/previous-versions/)
+* [PyTorch 0.4.1](https://pytorch.org/get-started/previous-versions/) with CUDA 9.0
+
+More packages are required to install the Matterport3D simulator. See [Setup simulator](https://github.com/debadeepta/learningtoask/tree/master/code) for more detail. 
+
+The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda, PyTorch and other required packages, you are good!
+
+
+
+
