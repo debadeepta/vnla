@@ -17,8 +17,7 @@ import torch.nn.functional as F
 from utils import padding_idx
 
 class BaseAgent(object):
-    ''' Base class for an R2R agent to generate and save trajectories. '''
-
+  
     def __init__(self):
         random.seed(1)
         self.results = {}

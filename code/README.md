@@ -1,23 +1,9 @@
 
-This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Except nothing else is specified, any of the below code snippets should be executed in this directory. 
-
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
 
-### 0. System requirements:
-* Python 2.7.15
-* PyTorch 0.4.1 
+This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Unless specified, all of the code snippets below should be executed in this directory. 
 
-We recommend installing via [Anaconda with Python 2.7](https://www.anaconda.com/download/#linux). 
-The following instructions assume you **use our recommended method to install Python and PyTorch**. 
-
-### 1. Download Matterport3D dataset
-
-Request access to the dataset [here](https://niessner.github.io/Matterport/). 
-Training and testing our models only require downloading the `house_segmentations` portion of the dataset. Unzip the files so that `<Matterdata>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
-
-Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
-
-### 2. Install Matterport3D simulator
+### 1. Install Matterport3D simulator
 
 Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
 ```
@@ -28,7 +14,7 @@ $ python
 ```
 
 **Common errors**
-* `ImportError: No module named MatterSim`: this will surely happen if you use Anaconda to install Python. 
+* `ImportError: No module named MatterSim`: this will definitely happen if you use Anaconda to install Python. 
 
 While compiling the simulator, instead of 
 ```
@@ -48,7 +34,7 @@ $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages
 ```
 where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
 
-### 3. Build simulator
+### 2. Build simulator
 
 Install dependencies
 ```
@@ -67,7 +53,7 @@ $ python
 >> import MatterSim
 ```
 
-### 4. Explore environments (optional)
+### 3. Explore environments (optional)
 
 *Make sure you are able to run the demo in the Matterport3D repo.*
 
@@ -86,6 +72,4 @@ For example:
 $ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6179938779914944
 ```
 
-
-
-
+Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
