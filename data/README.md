@@ -14,7 +14,8 @@ The following directories will be created:
 
 ### 2. Download Matterport3D dataset
 
-You may need the Matterport3D dataset for debugging and visualization. Request access to the dataset [here](https://niessner.github.io/Matterport/). Please read and agree to its [terms and conditions](http://dovahkiin.stanford.edu/matterport/public/MP_TOS.pdf)
+You may need the Matterport3D dataset for debugging and visualization. Request access to the dataset [here](https://niessner.github.io/Matterport/). Please read and agree to its [terms and conditions](http://dovahkiin.stanford.edu/matterport/public/MP_TOS.pdf).
+
 Training and testing our models only require downloading the `house_segmentations` portion of the dataset. Unzip the files so that `<some_folder>/v1/scans/<scanId>/house_segmentations/panorama_to_region.txt` are present. 
 
 Running in graphics mode is still useful for debugging and visualizing the agent behavior. You need to download the `matterport_skybox_images` portion and unzip the files so that `<some_folder>/v1/scans/<scanId>/matterport_skybox_images/*.jpg` are present. 
