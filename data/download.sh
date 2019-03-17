@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 git clone --recursive https://github.com/peteanderson80/Matterport3DSimulator.git
 cp -r Matterport3DSimulator/connectivity . 
