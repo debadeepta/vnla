@@ -299,6 +299,7 @@ class AskAgent(BaseAgent):
             obs = self.env.step(env_action)
 
             # Bookkeeping
+	    ask_target_list = ask_target.data.tolist()
             for i, ob in enumerate(obs):
                 if not ended[i]:
                     traj[i]['agent_path'].append((ob['viewpoint'], ob['heading'], ob['elevation']))
