@@ -29,8 +29,8 @@ to tell `cmake` where Python is installed by Anaconda.
 
 * `OpenCV does not support OpenGL`: you may have to install OpenCV from source with OpenGL support. Follow [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/), then link `cv2.so` to you your Anaconda site-packages directory:
 ```
-$ rm $ANACONDA_HOME/lib/python3.6/site-packages/cv2.so
-$ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python3.6/site-packages/cv2.so
+$ rm $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
+$ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
 ```
 where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
 
