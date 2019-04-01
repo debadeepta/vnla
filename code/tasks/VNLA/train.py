@@ -141,8 +141,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
         interval = min(hparams.log_every, end_iter - idx)
         iter = idx + interval
 
-        # Train for log_every interval
-
+        # Train for log_every iterations
         if eval_mode:
             loss_str = '\n * eval mode'
         else:
@@ -159,10 +158,10 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             loss_str += ', ask loss: %.4f' % train_ask_loss_avg
             loss_str += compute_ask_stats(traj)
 
-        # Run validation
         metrics = defaultdict(dict)
         should_save_ckpt = []
 
+        # Run validation
         for env_name, (env, evaluator) in val_envs.items():
             # Get validation loss under the same conditions as training
             agent.test(env, train_feedback, use_dropout=True, allow_cheat=True)
@@ -234,7 +233,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
                     param_group['lr'] *= hparams.lr_decay_rate
                     print('New learning rate %f' % param_group['lr'])
 
-            # Save lastest model
+            # Save lastest model?
             if iter == end_iter or iter % hparams.save_every == 0:
                 should_save_ckpt.append('last')
 
@@ -250,9 +249,9 @@ def setup(seed=None):
 
     if seed is not None:
         hparams.seed = seed
-
     torch.manual_seed(hparams.seed)
     torch.cuda.manual_seed(hparams.seed)
+
     # Check for vocabs
     train_vocab_path = os.path.join(hparams.data_path, 'train_vocab.txt')
     if not os.path.exists(train_vocab_path):
@@ -287,7 +286,6 @@ def train_val(seed=None):
     # Setup seed and read vocab
     setup(seed=seed)
 
-    # Create a batch training environment that will also preprocess text
     train_vocab_path = os.path.join(hparams.data_path, 'train_vocab.txt')
     if hasattr(hparams, 'external_main_vocab') and hparams.external_main_vocab:
         train_vocab_path = hparams.external_main_vocab
@@ -298,6 +296,8 @@ def train_val(seed=None):
     else:
         vocab = read_vocab([train_vocab_path])
     tok = Tokenizer(vocab=vocab, encoding_length=hparams.max_input_length)
+
+    # Create a training environment
     train_env = VNLABatch(hparams, split='train', tokenizer=tok)
 
     # Create validation environments
@@ -314,7 +314,7 @@ def train_val(seed=None):
         from_train_env=train_env, traj_len_estimates=train_env.traj_len_estimates),
         Evaluation(hparams, [split], hparams.data_path)) for split in val_splits}
 
-    # Build models and train
+    # Build models
     model = AttentionSeq2SeqModel(len(vocab), hparams, device).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=hparams.lr,
@@ -324,6 +324,7 @@ def train_val(seed=None):
                      'val_unseen': -1,
                      'combined'  : -1 }
 
+    # Load model parameters from a checkpoint (if any)
     if ckpt is not None:
         model.load_state_dict(ckpt['model_state_dict'])
         optimizer.load_state_dict(ckpt['optim_state_dict'])
@@ -335,11 +336,13 @@ def train_val(seed=None):
     print('')
     print(model)
 
+    # Initialize agent
     if 'verbal' in hparams.advisor:
         agent = VerbalAskAgent(model, hparams, device)
     elif hparams.advisor == 'direct':
         agent = AskAgent(model, hparams, device)
 
+    # Train
     return train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
           best_metrics, eval_mode)
 
@@ -363,6 +366,7 @@ if __name__ == "__main__":
     set_path()
 
     with torch.cuda.device(hparams.device_id):
+        # Multi-seed evaluation
         if hasattr(hparams, 'multi_seed_eval') and hparams.multi_seed_eval:
             args.eval_only = 1
             seeds = [123, 435, 6757, 867, 983]
@@ -378,5 +382,6 @@ if __name__ == "__main__":
                 for k, v in metrics[metric].items():
                    print('%s %s: %.2f %.2f' % (metric, k, np.average(v), stats.sem(v) * 1.95))
         else:
+            # Train
             train_val()
 

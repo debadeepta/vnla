@@ -18,6 +18,7 @@ sys.path.append('../../build')
 import MatterSim
 
 class ShortestPathOracle(object):
+    ''' Shortest navigation teacher '''
 
     def __init__(self, agent_nav_actions, env_nav_actions=None):
         self.scans = set()
@@ -63,18 +64,21 @@ class ShortestPathOracle(object):
         return self._find_nearest_point(scan, current_point, path)
 
     def _shortest_path_action(self, ob):
-        ''' Determine next action on the shortest path to goal, for supervised training. '''
+        ''' Determine next action on the shortest path to goals. '''
 
         scan = ob['scan']
         start_point = ob['viewpoint']
 
-        # Find nearest goal view point
+        # Find nearest goal
         _, goal_point = self._find_nearest_point(scan, start_point, ob['goal_viewpoints'])
 
+        # Stop if a goal is reached
         if start_point == goal_point:
-            return (0, 0, 0) # do nothing
+            return (0, 0, 0)
+
         path = self.paths[scan][start_point][goal_point]
         next_point = path[1]
+
         # Can we see the next viewpoint?
         for i, loc in enumerate(ob['navigableLocations']):
             if loc.viewpointId == next_point:
@@ -89,11 +93,13 @@ class ShortestPathOracle(object):
                       return (0, 0,-1) # Look down
                 else:
                       return (i, 0, 0) # Move
+
         # Can't see it - first neutralize camera elevation
         if ob['viewIndex'] // 12 == 0:
             return (0, 0, 1) # Look up
         elif ob['viewIndex'] // 12 == 2:
             return (0, 0,-1) # Look down
+
         # Otherwise decide which way to turn
         target_rel = self.graph[ob['scan']].node[next_point]['position'] - ob['point']
         target_heading = math.pi / 2.0 - math.atan2(target_rel[1], target_rel[0])
@@ -103,6 +109,7 @@ class ShortestPathOracle(object):
             return (0, -1, 0) # Turn left
         if target_heading > ob['heading'] and target_heading - ob['heading'] > math.pi:
             return (0, -1, 0) # Turn left
+
         return (0, 1, 0) # Turn right
 
     def _map_env_action_to_agent_action(self, action, ob):
@@ -123,6 +130,8 @@ class ShortestPathOracle(object):
 
     def interpret_agent_action(self, action_idx, ob):
 
+        # If the action is not `forward`, simply map it to the simulator's
+        # action space
         if action_idx != self.agent_nav_actions.index('forward'):
             return self.env_nav_actions[action_idx]
 
@@ -141,7 +150,8 @@ class ShortestPathOracle(object):
 
         next_optimal_point = optimal_path[1]
 
-        # If the next optimal point is within the center of the view, go to it.
+        # If the next optimal viewpoint is within 30 degrees of the center of
+        # the view, go to it.
         for i, loc in enumerate(ob['navigableLocations']):
             if loc.viewpointId == next_optimal_point:
                 if loc.rel_heading > math.pi/6.0 or loc.rel_heading < -math.pi/6.0 or \
@@ -149,7 +159,7 @@ class ShortestPathOracle(object):
                    (loc.rel_elevation < -math.pi/6.0 and ob['viewIndex'] // 12 > 0):
                     continue
                 else:
-                    return (i, 0, 0) # Move
+                    return (i, 0, 0)
 
         # Otherwise, take action 1.
         return (1, 0, 0)
@@ -179,10 +189,8 @@ class AskOracle(object):
         if ob['queries_unused'] <= 0:
             return self.DONT_ASK, 'exceed'
 
-        # Find nearest point on the current shortest path.
         scan = ob['scan']
         current_point = ob['viewpoint']
-        # Find nearest goal to current point
         _, goal_point = nav_oracle._find_nearest_point(scan, current_point, ob['goal_viewpoints'])
 
         agent_decision = int(np.argmax(ob['nav_dist']))
@@ -191,7 +199,6 @@ class AskOracle(object):
             return self.ASK, 'arrive'
 
         start_point = ob['init_viewpoint']
-        # Find closest point to the current point on the path from start point to goal point
         d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point, start_point, goal_point)
         if d > self.deviate_threshold:
             return self.ASK, 'deviate'
@@ -230,34 +237,42 @@ class AskOracle(object):
         if ob['queries_unused'] <= 0:
             return self.DONT_ASK, 'exceed'
 
-        # Find nearest point on the current shortest path.
+        # Find nearest point on the current shortest path
         scan = ob['scan']
         current_point = ob['viewpoint']
         # Find nearest goal to current point
         _, goal_point = nav_oracle._find_nearest_point(scan, current_point, ob['goal_viewpoints'])
 
+        # Rule (e): ask if the goal has been reached but the agent decides to
+        # go forward
         agent_decision = int(np.argmax(ob['nav_dist']))
         if current_point == goal_point and \
            agent_decision == nav_oracle.agent_nav_actions.index('forward'):
             return self.ASK, 'arrive'
 
         start_point = ob['init_viewpoint']
-        # Find closest point to the current point on the path from start point to goal point
-        d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point, start_point, goal_point)
+        # Find closest point to the current point on the path from start point
+        # to goal point
+        d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point,
+            start_point, goal_point)
+        # Rule (a): ask if the agent deviates too far from the optimal path
         if d > self.deviate_threshold:
             return self.ASK, 'deviate'
 
+        # Rule (b): ask if uncertain
         agent_dist = ob['nav_dist']
         uniform = [1. / len(agent_dist)] * len(agent_dist)
         entropy_gap = scipy.stats.entropy(uniform) - scipy.stats.entropy(agent_dist)
         if entropy_gap < self.uncertain_threshold - 1e-9:
             return self.ASK, 'uncertain'
 
+        # Rule (c): ask if not moving for too long
         if len(ob['agent_path']) >= self.unmoved_threshold:
             last_nodes = [t[0] for t in ob['agent_path']][-self.unmoved_threshold:]
             if all(node == last_nodes[0] for node in last_nodes):
                 return self.ASK, 'unmoved'
 
+        # Rule (d): ask to spend all budget at the end
         if ob['queries_unused'] >= ob['traj_len'] - ob['time_step']:
             return self.ASK, 'why_not'
 

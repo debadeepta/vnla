@@ -101,6 +101,7 @@ class VNLABatch():
             self.load_data(load_datasets([split], hparams.data_path,
                 prefix='noroom' if self.no_room else 'asknav'))
 
+        # Estimate time budget using the upper 95% confidence bound
         if traj_len_estimates is None:
             for k in self.traj_len_estimates:
                 self.traj_len_estimates[k] = min(self.max_episode_length,
@@ -193,6 +194,8 @@ class VNLABatch():
         return obs
 
     def _calculate_max_queries(self, traj_len):
+        ''' Sample a help-requesting budget given a time budget. '''
+
         max_queries = self.query_ratio * traj_len / self.n_subgoal_steps
         int_max_queries = int(max_queries)
         frac_max_queries = max_queries - int_max_queries
@@ -200,6 +203,7 @@ class VNLABatch():
 
     def reset(self, is_eval):
         ''' Load a new minibatch / episodes. '''
+
         self._next_minibatch()
 
         scanIds = [item['scan'] for item in self.batch]
@@ -210,18 +214,23 @@ class VNLABatch():
 
         self.max_queries_constraints = [None] * self.batch_size
         self.traj_lens = [None] * self.batch_size
+
         for i, item in enumerate(self.batch):
+            # Assign time budget
             if is_eval:
-                # If eval use expected length between start_region and end_region
+                # If eval use expected trajectory length between start_region and end_region
                 key = self.make_traj_estimate_key(item)
                 traj_len_estimate = self.traj_len_estimates[key]
             else:
-                # If train use average oracle length
+                # If train use average oracle trajectory length
                 traj_len_estimate = sum(len(t)
                     for t in item['trajectories']) / len(item['trajectories'])
             self.traj_lens[i] = min(self.max_episode_length, int(round(traj_len_estimate)))
+
+            # Assign help-requesting budget
             self.max_queries_constraints[i] = self._calculate_max_queries(self.traj_lens[i])
             assert not math.isnan(self.max_queries_constraints[i])
+
         return self._get_obs()
 
     def step(self, actions):
@@ -229,6 +238,8 @@ class VNLABatch():
         return self._get_obs()
 
     def prepend_instruction(self, idx, instr):
+        ''' Prepend subgoal to end-goal. '''
+
         self.instructions[idx] = instr + ' . ' + self.batch[idx]['instruction']
 
     def get_obs(self):

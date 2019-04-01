@@ -23,7 +23,8 @@ from oracle import make_oracle
 
 class AskAgent(BaseAgent):
 
-    nav_actions = ['left', 'right', 'up', 'down', 'forward', '<end>', '<start>', '<ignore>']
+    nav_actions = ['left', 'right', 'up', 'down',
+                   'forward', '<end>', '<start>', '<ignore>']
     env_actions = [
         (0,-1, 0), # left
         (0, 1, 0), # right
@@ -41,8 +42,10 @@ class AskAgent(BaseAgent):
         super(AskAgent, self).__init__()
         self.model = model
         self.episode_len = hparams.max_episode_length
-        self.nav_criterion = nn.CrossEntropyLoss(ignore_index = self.nav_actions.index('<ignore>'))
-        self.ask_criterion = nn.CrossEntropyLoss(ignore_index = self.ask_actions.index('<ignore>'))
+        self.nav_criterion = nn.CrossEntropyLoss(
+            ignore_index = self.nav_actions.index('<ignore>'))
+        self.ask_criterion = nn.CrossEntropyLoss(
+            ignore_index = self.ask_actions.index('<ignore>'))
 
         self.teacher = make_oracle('next_optimal', hparams, self.nav_actions,
             self.env_actions, self.ask_actions)
@@ -82,9 +85,7 @@ class AskAgent(BaseAgent):
         return len(AskAgent.ask_actions) - 2
 
     def _make_batch(self, obs):
-        ''' Extract instructions from a list of observations and sort by descending
-             sequence length (to enable PyTorch packing). '''
-
+        ''' Make a variable for a batch of input instructions. '''
         seq_tensor = np.array([self.env.encode(ob['instruction']) for ob in obs])
 
         seq_lengths = np.argmax(seq_tensor == padding_idx, axis=1)
@@ -100,7 +101,7 @@ class AskAgent(BaseAgent):
         return seq_tensor, mask, seq_lengths
 
     def _feature_variable(self, obs):
-        ''' Extract precomputed features into variable. '''
+        ''' Make a variable for a batch of precomputed image features. '''
         feature_size = obs[0]['feature'].shape[0]
         features = np.empty((len(obs),feature_size), dtype=np.float32)
         for i,ob in enumerate(obs):
@@ -127,6 +128,8 @@ class AskAgent(BaseAgent):
         return sample
 
     def _next_action(self, name, logit, target, feedback):
+        ''' Determine the next action to take based on the training algorithm. '''
+
         if feedback == 'teacher':
             return target
         if feedback == 'argmax':
@@ -160,10 +163,9 @@ class AskAgent(BaseAgent):
                 random_ask_positions[i] = self.random.sample(
                     range(ob['traj_len']), ob['max_queries'])
 
-        # Index initial command
         seq, seq_mask, seq_lengths = self._make_batch(obs)
 
-        # Roll-out bookkeeping
+        # History
         traj = [{
             'scan': ob['scan'],
             'instr_id': ob['instr_id'],
@@ -179,6 +181,7 @@ class AskAgent(BaseAgent):
         ctx, _ = self.model.encode(seq, seq_lengths)
         decoder_h = None
 
+        # Coverage vector
         if self.coverage_size is not None:
             cov = torch.zeros(seq_mask.size(0), seq_mask.size(1), self.coverage_size,
                 dtype=torch.float, device=self.device)
@@ -191,7 +194,7 @@ class AskAgent(BaseAgent):
         q_t = torch.ones(batch_size, dtype=torch.long, device=self.device) * \
             self.ask_actions.index('<start>')
 
-        # Whether agent decides to stop
+        # Whether agent has decided to stop
         ended = np.array([False] * batch_size)
 
         self.nav_loss = 0
@@ -208,12 +211,12 @@ class AskAgent(BaseAgent):
 
         for time_step in range(episode_len):
 
-            # Action masking
             nav_logit_mask = torch.zeros(batch_size,
                 AskAgent.n_output_nav_actions(), dtype=torch.uint8, device=self.device)
             ask_logit_mask = torch.zeros(batch_size,
                 AskAgent.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
 
+            # Mask invalid actions
             nav_mask_indices = []
             ask_mask_indices = []
             for i, ob in enumerate(obs):
@@ -257,13 +260,13 @@ class AskAgent(BaseAgent):
             a_t = self._next_action('nav', nav_logit, nav_target, self.nav_feedback)
             q_t = self._next_action('ask', ask_logit, ask_target, self.ask_feedback)
 
-            # Updated 'ended' list and make environment action
             nav_target_list = nav_target.data.tolist()
             ask_target_list = ask_target.data.tolist()
             a_t_list = a_t.data.tolist()
             q_t_list = q_t.data.tolist()
 
             for i in range(batch_size):
+                # Change ask action according to policy
                 if ask_target_list[i] != self.ask_actions.index('<ignore>'):
                     if self.random_ask:
                         q_t_list[i] = time_step in random_ask_positions[i]
@@ -274,6 +277,7 @@ class AskAgent(BaseAgent):
                     elif self.no_ask:
                         q_t_list[i] = 0
 
+                # If ask
                 if self._should_ask(ended[i], q_t_list[i]):
                     # Query advisor for subgoals
                     subgoals[i] = self.advisor(obs[i])
@@ -282,20 +286,22 @@ class AskAgent(BaseAgent):
                     # Decrement queries unused
                     queries_unused[i] -= 1
 
+                # Direct advisor: If still executing a subgoal, overwrite agent's
+                #   decision by advisor's decision.
                 if n_subgoal_steps[i] < len(subgoals[i]):
                     a_t_list[i] = subgoals[i][n_subgoal_steps[i]]
                     n_subgoal_steps[i] += 1
 
+                # Map the agent's action back to the simulator's action space.
                 env_action[i] = self.teacher.interpret_agent_action(a_t_list[i], obs[i])
 
-            # Nav actions fed to the next step are of agent (if not ask) or teacher (if ask).
             a_t = torch.tensor(a_t_list, dtype=torch.long, device=self.device)
             q_t = torch.tensor(q_t_list, dtype=torch.long, device=self.device)
 
-            # Execute actions
+            # Execute nav actions
             obs = self.env.step(env_action)
 
-            # Bookkeeping
+            # Update history
             ask_target_list = ask_target.data.tolist()
             for i, ob in enumerate(obs):
                 if not ended[i]:

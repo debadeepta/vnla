@@ -20,7 +20,6 @@ csv.field_size_limit(sys.maxsize)
 
 
 def load_nav_graphs(scan, path=None):
-    ''' Load connectivity graph for each scan '''
 
     def distance(pose1, pose2):
         ''' Euclidean distance between two graph poses '''
@@ -68,7 +67,6 @@ def load_datasets(splits, path, prefix=''):
 
 
 class Tokenizer(object):
-    ''' Class to tokenize and encode a sentence. '''
     SENTENCE_SPLIT_REGEX = re.compile(r'(\W+)') # Split on any non-alphanumeric character
 
     def __init__(self, vocab, encoding_length, split_by_spaces=True):

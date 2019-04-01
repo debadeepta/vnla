@@ -19,7 +19,7 @@ class BaseAgent(object):
     def __init__(self):
         random.seed(1)
         self.results = {}
-        self.losses = [] # For learning agents
+        self.losses = []
         self.results_path = None
 
     def write_results(self, traj):
