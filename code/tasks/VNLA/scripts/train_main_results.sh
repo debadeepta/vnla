@@ -23,7 +23,7 @@ then
   extra="-random_ask 1"
 elif [ "$exp_name" == "teacher" ]
 then
-  extra="-ask_first 1"
+  extra="-teacher_ask 1"
 elif [ "$exp_name" == "learned" ]
 then
   extra=""
@@ -33,7 +33,7 @@ else
   exit
 fi
 
-command="python train.py -config $config_file -exp $output_dir $extra -device $device"
+command="python -u train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command
 $command
 
