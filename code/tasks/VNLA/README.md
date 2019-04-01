@@ -5,7 +5,7 @@ Scripts for reproducing results in the paper are in `scripts`. All scripts shoul
 $ cd scripts
 ```
 
-The `define_vars.sh` script defines two environment variables: `PT_DATA_DIR` (where the AskNav dataset is at) and `PT_OUTPUT_DIR` (where you models/results are saved)
+The `define_vars.sh` script defines two environment variables: `PT_DATA_DIR` (where the AskNav dataset is at) and `PT_OUTPUT_DIR` (where your models/results are saved).
 
 
 You can run a script without arguments to display its usage. For example,
