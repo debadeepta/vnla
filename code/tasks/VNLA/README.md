@@ -40,7 +40,7 @@ You need to train one additional agent: an agent trained without subgoals and wi
 $ bash train_subgoal_effects.sh no_subgoal
 ```
 
-Evaluate the agent with a direct advisor on `test unseen` (first row, third column of the table):
+Evaluate the agent with a direct advisor on `test unseen` (first row, `test unseen` column of the table):
 ```
 $ bash eval_subgoal_effects.sh direct_no_subgoal unseen
 ```
