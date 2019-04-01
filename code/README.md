@@ -25,7 +25,7 @@ run
 ```
 $ cmake -DPYTHON_EXECUTABLE:FILEPATH=$(which python) .. 
 ```
-to tell `cmake` where Python is installed. 
+to tell `cmake` where Python is installed by Anaconda. 
 
 * `OpenCV does not support OpenGL`: you may have to install OpenCV from source with OpenGL support. Follow [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/), then link `cv2.so` to you your Anaconda site-packages directory:
 ```
