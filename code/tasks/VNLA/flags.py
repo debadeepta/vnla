@@ -109,4 +109,10 @@ def make_parser():
    parser.add_argument('-no_room', type=int,
         help='train or evaluate with the no_room dataset (when using this, set -data_dir noroom)')
 
+   parser.add_argument('-rule_a_e', type=int,
+        help='Use rules (a) and (e) only for help-requesting teacher')
+   parser.add_argument('-rule_b_d', type=int,
+        help='Use rules (b) to (d) only for help-requesting teacher')
+
+
    return parser
