@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from utils import padding_idx
 
 class BaseAgent(object):
-  
+
     def __init__(self):
         random.seed(1)
         self.results = {}
@@ -26,7 +26,7 @@ class BaseAgent(object):
 
     def write_results(self, traj):
         output = []
-        for k, v in self.results.iteritems():
+        for k, v in self.results.items():
             item = { 'instr_id' : k }
             item.update(v)
             output.append(item)
@@ -58,9 +58,9 @@ class BaseAgent(object):
                                 'scan'       : t['scan'],
                                 'agent_nav'  : t['agent_nav'],
                             }
-			for k in ['agent_ask', 'teacher_ask', 'teacher_ask_reason']:
-			    if k in t:
-				self.results[t['instr_id']][k] = t[k]
+                        for k in ['agent_ask', 'teacher_ask', 'teacher_ask_reason']:
+                            if k in t:
+                                self.results[t['instr_id']][k] = t[k]
                         if 'subgoals' in t:
                             self.results[t['instr_id']]['subgoals'] = t['subgoals']
                         traj.append(t)
