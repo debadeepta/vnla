@@ -1,4 +1,5 @@
-''' Agents: stop/random/shortest/seq2seq  '''
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
 
 from __future__ import division
 

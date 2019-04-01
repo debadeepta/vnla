@@ -1,5 +1,3 @@
-''' Evaluation of agent trajectories '''
-
 import json
 import os
 import sys

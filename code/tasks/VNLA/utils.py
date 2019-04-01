@@ -1,5 +1,3 @@
-''' Utils for io, language, connectivity graphs etc '''
-
 from __future__ import division
 
 import os

@@ -1,5 +1,3 @@
-''' Agents: stop/random/shortest/seq2seq  '''
-
 import json
 import os
 import sys

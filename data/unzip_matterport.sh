@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 matter_root=$1
 
 if [ ! -d "$matter_root" ]; then
