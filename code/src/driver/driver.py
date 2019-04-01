@@ -49,11 +49,11 @@ while True:
 
     if state.location.viewpointId != vp_id or abs(state.heading - heading_id) > 1e-6 \
        or abs(state.elevation - elevation_id) > 1e-6:
-        print abs(state.heading - heading_id)
+        print(abs(state.heading - heading_id))
         vp_id = state.location.viewpointId
         heading_id = state.heading
         elevation_id = state.elevation
-        print vp_id, heading_id, elevation_id, state.location.point
+        print(vp_id, heading_id, elevation_id, state.location.point)
 
     locations = state.navigableLocations
     im = state.rgb
