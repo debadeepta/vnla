@@ -29,7 +29,7 @@ class ShortestPathOracle(object):
     def add_scans(self, scans, path=None):
         new_scans = set.difference(scans, self.scans)
         if new_scans:
-            print 'Loading navigation graphs for %d scans' % len(new_scans)
+            print('Loading navigation graphs for %d scans' % len(new_scans))
             for scan in new_scans:
                 graph, paths, distances = self._compute_shortest_paths(scan, path=path)
                 self.graph[scan] = graph
@@ -104,8 +104,8 @@ class ShortestPathOracle(object):
 
     def _map_env_action_to_agent_action(self, action, ob):
         ix, heading_chg, elevation_chg = action
-	if heading_chg > 0:
- 	    return self.agent_nav_actions.index('right')
+        if heading_chg > 0:
+            return self.agent_nav_actions.index('right')
         if heading_chg < 0:
             return self.agent_nav_actions.index('left')
         if elevation_chg > 0:
@@ -168,8 +168,63 @@ class AskOracle(object):
         self.unmoved_threshold = hparams.unmoved_threshold
         self.agent_ask_actions = agent_ask_actions
 
+        self.rule_a_e = hasattr(hparams, 'rule_a_e') and hparams.rule_a_e
+        self.rule_b_d = hasattr(hparams, 'rule_b_d') and hparams.rule_b_d
+
+    def _should_ask_rule_a_e(self, ob, nav_oracle=None):
+
+        if ob['queries_unused'] <= 0:
+            return self.DONT_ASK, 'exceed'
+
+        # Find nearest point on the current shortest path.
+        scan = ob['scan']
+        current_point = ob['viewpoint']
+        # Find nearest goal to current point
+        _, goal_point = nav_oracle._find_nearest_point(scan, current_point, ob['goal_viewpoints'])
+
+        agent_decision = int(np.argmax(ob['nav_dist']))
+        if current_point == goal_point and \
+           agent_decision == nav_oracle.agent_nav_actions.index('forward'):
+            return self.ASK, 'arrive'
+
+        start_point = ob['init_viewpoint']
+        # Find closest point to the current point on the path from start point to goal point
+        d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point, start_point, goal_point)
+        if d > self.deviate_threshold:
+            return self.ASK, 'deviate'
+
+        return self.DONT_ASK, 'pass'
+
+    def _should_ask_rule_b_d(self, ob, nav_oracle=None):
+
+        if ob['queries_unused'] <= 0:
+            return self.DONT_ASK, 'exceed'
+
+        agent_dist = ob['nav_dist']
+        uniform = [1. / len(agent_dist)] * len(agent_dist)
+        entropy_gap = scipy.stats.entropy(uniform) - scipy.stats.entropy(agent_dist)
+        if entropy_gap < self.uncertain_threshold - 1e-9:
+            return self.ASK, 'uncertain'
+
+        if len(ob['agent_path']) >= self.unmoved_threshold:
+            last_nodes = [t[0] for t in ob['agent_path']][-self.unmoved_threshold:]
+            if all(node == last_nodes[0] for node in last_nodes):
+                return self.ASK, 'unmoved'
+
+        if ob['queries_unused'] >= ob['traj_len'] - ob['time_step']:
+            return self.ASK, 'why_not'
+
+        return self.DONT_ASK, 'pass'
+
     def _should_ask(self, ob, nav_oracle=None):
-        if ob['queries_used'] >= ob['max_queries']:
+
+        if self.rule_a_e:
+            return self._should_ask_rule_a_e(ob, nav_oracle=nav_oracle)
+
+        if self.rule_b_d:
+            return self._should_ask_rule_b_d(ob, nav_oracle=nav_oracle)
+
+        if ob['queries_unused'] <= 0:
             return self.DONT_ASK, 'exceed'
 
         # Find nearest point on the current shortest path.
@@ -200,7 +255,7 @@ class AskOracle(object):
             if all(node == last_nodes[0] for node in last_nodes):
                 return self.ASK, 'unmoved'
 
-        if ob['max_queries'] - ob['queries_used'] >= ob['traj_len'] - ob['time_step']:
+        if ob['queries_unused'] >= ob['traj_len'] - ob['time_step']:
             return self.ASK, 'why_not'
 
         return self.DONT_ASK, 'pass'
@@ -229,9 +284,9 @@ class MultistepShortestPathOracle(ShortestPathOracle):
         self.sim.setCameraResolution(640, 480)
         self.sim.setCameraVFOV(math.radians(60))
         self.sim.setNavGraphPath(
-	    os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
+            os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
         self.sim.init()
-	self.n_steps = n_steps
+        self.n_steps = n_steps
         self.env_nav_actions = env_nav_actions
 
     def _shortest_path_actions(self, ob):
@@ -240,7 +295,7 @@ class MultistepShortestPathOracle(ShortestPathOracle):
 
         assert not ob['ended']
 
-	for _ in range(self.n_steps):
+        for _ in range(self.n_steps):
             # Query oracle for next action
             action = self._shortest_path_action(ob)
             # Convert to agent action
@@ -351,7 +406,7 @@ class StepByStepSubgoalOracle(object):
                     elif 'right' in action_name:
                         instruction.append('turn %d degrees right' % degree)
                     else:
-                        raise ValueError, action_name
+                        raise(ValueError, action_name)
                 elif 'go' in action_name:
                     instruction.append('%s %d steps' % (action_name, c))
             elif action_name != '':
@@ -370,76 +425,6 @@ class StepByStepSubgoalOracle(object):
         return action_seq, verbal_instruction
 
 
-class UntilStopShortestPathOracle(ShortestPathOracle):
-
-    max_steps = 25
-
-    def __init__(self, agent_nav_actions, env_nav_actions):
-        super(UntilStopShortestPathOracle, self).__init__(agent_nav_actions)
-        self.sim = MatterSim.Simulator()
-        self.sim.setRenderingEnabled(False)
-        self.sim.setDiscretizedViewingAngles(True)
-        self.sim.setCameraResolution(640, 480)
-        self.sim.setCameraVFOV(math.radians(60))
-        self.sim.setNavGraphPath(
-	    os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
-        self.sim.init()
-        self.env_nav_actions = env_nav_actions
-
-    def _shortest_path_actions(self, ob):
-        item = { 'scan'          : ob['scan'],
-                 'heading'       : ob['heading'],
-                 'actions'       : [self.agent_nav_actions.index('<start>')],
-                 'viewpoints'    : [ob['viewpoint']],
-                 'view_indices'  : [[ob['viewIndex']]],
-                 'navigables'    : [len(ob['navigableLocations'])],
-                 'next_viewpoint': {},
-                 'instructions'  : ['<NONE>'] }
-
-        self.sim.newEpisode(ob['scan'], ob['viewpoint'], ob['heading'], ob['elevation'])
-	for _ in range(self.max_steps):
-            action = self._shortest_path_action(ob)
-            agent_action = self._map_env_action_to_agent_action(action, ob)
-
-            assert agent_action < len(self.agent_nav_actions) - 1, \
-                str(action) + ' ' + str(ob['ended'])
-
-            item['actions'].append(agent_action)
-
-            if action == (0, 0, 0):
-                item['viewpoints'].append(ob['viewpoint'])
-                item['view_indices'].append([ob['viewIndex']])
-                if item['viewpoints'][-1] != item['viewpoints'][-2]:
-                    item['next_viewpoint'][item['viewpoints'][-2]] = item['viewpoints'][-1]
-                item['navigables'].append(len(ob['navigableLocations']))
-                assert len(item['viewpoints']) == len(item['navigables']) == len(item['actions'])
-                break
-
-            self.sim.makeAction(*action)
-            state = self.sim.getState()
-            ob = {
-                    'viewpoint': state.location.viewpointId,
-                    'viewIndex': state.viewIndex,
-                    'heading'  : state.heading,
-                    'elevation': state.elevation,
-                    'navigableLocations': state.navigableLocations,
-                    'point'    : state.location.point,
-                    'ended'    : ob['ended'] or action == (0, 0, 0),
-                    'goal_viewpoints': ob['goal_viewpoints'],
-                    'scan'     : ob['scan']
-                }
-
-            item['viewpoints'].append(ob['viewpoint'])
-            item['view_indices'].append([ob['viewIndex']])
-            if item['viewpoints'][-1] != item['viewpoints'][-2]:
-                item['next_viewpoint'][item['viewpoints'][-2]] = item['viewpoints'][-1]
-            item['navigables'].append(len(ob['navigableLocations']))
-
-        return item
-
-    def __call__(self, ob):
-        return self._shortest_path_actions(ob)
-
 def make_oracle(oracle_type, *args, **kwargs):
     if oracle_type == 'shortest':
         return ShortestPathOracle(*args, **kwargs)
@@ -455,12 +440,5 @@ def make_oracle(oracle_type, *args, **kwargs):
 
     return None
 
-
-def make_subgoal_oracle(oracle_type, *args, **kwargs):
-    if oracle_type == 'step_by_step_easy' or oracle_type == 'step_by_step_hard':
-        return StepByStepSubgoalOracle(*args, **kwargs)
-    if oracle_type == 'natural':
-        return NaturalSubgoalOracle(*args, **kwargs)
-    return None
 
 
