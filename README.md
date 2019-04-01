@@ -28,7 +28,7 @@ The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda
 3. [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA). 
 
 
-Please create Github issues or email kxnguyen@cs.umd.edu, dedey@microsoft.com for any question or feedback. 
+Please create a Github issue or email kxnguyen@cs.umd.edu, dedey@microsoft.com for any question or feedback. 
 
 
 
