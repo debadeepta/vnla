@@ -27,7 +27,7 @@ We provide the script `unzip_matterport.sh` in this directory to help you unzip 
 $ bash unzip_matterport $matter_root
 ```
 
-where `$matter_root` is the Matterport3D dataset top folder where `matter_root/v1/scans/` is located.  
+where `$matter_root` is the Matterport3D dataset top folder where `$matter_root/v1/scans/` is located.  
 
 
 
