@@ -153,7 +153,7 @@ def build_vocab(path, splits, min_count, max_length, start_vocab=base_vocab,
 
 
 def write_vocab(vocab, path):
-    print 'Writing vocab of size %d to %s' % (len(vocab),path)
+    print('Writing vocab of size %d to %s' % (len(vocab),path))
     with open(path, 'w') as f:
         for word in vocab:
             f.write("%s\n" % word)
@@ -169,7 +169,7 @@ def read_vocab(paths):
                 if w not in added:
                     added.add(w)
                     vocab.append(w)
-    print 'Read vocab of size', len(vocab)
+    print('Read vocab of size', len(vocab))
     return vocab
 
 def asMinutes(s):
@@ -195,22 +195,23 @@ def read_subgoal_vocab(paths):
                 if w not in added:
                     added.add(w)
                     vocab.append(w)
-    print 'Read vocab of size', len(vocab)
+    print('Read vocab of size', len(vocab))
     return vocab
 
 def load_img_features(path):
-    print 'Loading image features from %s' % path
+    print('Loading image features from %s' % path)
     tsv_fieldnames = ['scanId', 'viewpointId', 'image_w','image_h', 'vfov', 'features']
     features = {}
-    with open(path, "rb") as tsv_in_file:
-	reader = csv.DictReader(tsv_in_file, delimiter='\t', fieldnames = tsv_fieldnames)
-	for i, item in enumerate(reader):
-	    image_h = int(item['image_h'])
-	    image_w = int(item['image_w'])
-	    vfov = int(item['vfov'])
-	    long_id = item['scanId'] + '_' + item['viewpointId']
-	    features[long_id] = np.frombuffer(base64.decodestring(item['features']),
-		    dtype=np.float32).reshape((36, 2048))
+    with open(path, "rt") as tsv_in_file:
+        reader = csv.DictReader(tsv_in_file, delimiter='\t', fieldnames=tsv_fieldnames)
+        for i, item in enumerate(reader):
+            image_h = int(item['image_h'])
+            image_w = int(item['image_w'])
+            vfov = int(item['vfov'])
+            long_id = item['scanId'] + '_' + item['viewpointId']
+            features[long_id] = np.frombuffer(
+                    base64.decodebytes(bytearray(item['features'], 'utf-8')),
+                    dtype=np.float32).reshape((36, 2048))
     return image_h, image_w, vfov, features
 
 def load_region_label_to_name():
