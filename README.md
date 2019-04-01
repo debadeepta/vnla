@@ -20,7 +20,7 @@ See [setup simulator](https://github.com/debadeepta/learningtoask/tree/master/co
 The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda, PyTorch and other required packages, you are good!
 
 
-### Let's run the code!
+### Let's play with the code!
 
 0. Clone this repo `git clone --recursive https://github.com/debadeepta/vnla.git` (don't forget the `--recurive` flag!)
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
