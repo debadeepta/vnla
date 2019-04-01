@@ -80,6 +80,10 @@ Evaluate this agent on `test unseen` of `noroom`
 $ bash eval_noroom.sh asknav_learned unseen
 ```
 
+### Rule ablation
+
+We also provide scripts to run the rule ablation study (Table 7). See `train_rule_ablation.sh` and `eval_rule_ablation.sh`
+
 ### Train with new configuration
 
 1. Set environment variables `PT_DATA_DIR` and `PT_OUTPUT_DIR` to the data directory and the output directory, respectively. See `scripts/define_vars.sh` for more detail. 
@@ -88,4 +92,6 @@ $ bash eval_noroom.sh asknav_learned unseen
 
 Besides the `verbal_hard` advisor, which we use in our paper, we also provide a `verbal_easy`, which does not aggregate repeated actions. 
 
+### Extend this project
 
+The language used in the paper is very primitive and scene-independent. To enhance the language, go to `oracle.py` and extend the `StepByStepSubgoalOracle` class. Play with different kinds of language and see whether the agent can leverage them to accomplish the tasks!
