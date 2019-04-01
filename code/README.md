@@ -55,7 +55,7 @@ $ python
 
 ### 3. Explore environments (optional)
 
-*Before following the instructions below, make sure you are able to run the demo in the Matterport3D repo.*
+*Before following the instructions below, make sure you are able to run the demo in the [Matterport3DSimulator](https://github.com/peteanderson80/Matterport3DSimulator) repo.*
 
 Link to the Matterport3D Dataset, which should be structured as `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg`:
 ```
