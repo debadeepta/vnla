@@ -93,7 +93,6 @@ class VerbalAskAgent(AskAgent):
         n_subgoal_steps = [0] * batch_size
 
         env_action = [None] * batch_size
-        queries_used = [0] * batch_size
         queries_unused = [ob['max_queries'] for ob in obs]
 
         episode_len = max(ob['traj_len'] for ob in obs)
@@ -112,11 +111,11 @@ class VerbalAskAgent(AskAgent):
                 if len(ob['navigableLocations']) <= 1:
                     nav_mask_indices.append((i, self.nav_actions.index('forward')))
 
-                if queries_used[i] >= ob['max_queries']:
+                if queries_unused[i] <= 0:
                     ask_mask_indices.append((i, self.ask_actions.index('ask')))
 
-            nav_logit_mask[zip(*nav_mask_indices)] = 1
-            ask_logit_mask[zip(*ask_mask_indices)] = 1
+            nav_logit_mask[list(zip(*nav_mask_indices))] = 1
+            ask_logit_mask[list(zip(*ask_mask_indices))] = 1
 
             # Image features
             f_t = self._feature_variable(obs)
@@ -129,7 +128,7 @@ class VerbalAskAgent(AskAgent):
                 a_t, q_t, f_t, decoder_h, ctx, seq_mask, nav_logit_mask,
                 ask_logit_mask, budget=b_t, cov=cov)
 
-            self._populate_agent_state_to_obs(obs, nav_softmax, queries_used,
+            self._populate_agent_state_to_obs(obs, nav_softmax, queries_unused,
                 traj, ended, time_step)
 
             # Ask teacher for next ask action
@@ -164,8 +163,6 @@ class VerbalAskAgent(AskAgent):
                     self.env.prepend_instruction(i, verbal_subgoals[i])
                     # Reset subgoal step index
                     n_subgoal_steps[i] = 0
-                    # Increment queries used
-                    queries_used[i] += 1
                     # Decrement queries unused
                     queries_unused[i] -= 1
                     # Mark that some agent has asked
@@ -194,8 +191,8 @@ class VerbalAskAgent(AskAgent):
                 budget=b_t, cov=cov)
 
             # Repopulate agent state
-            # NOTE: queries_used may have changed but it's fine since nav_teacher does not use it!
-            self._populate_agent_state_to_obs(obs, nav_softmax, queries_used,
+            # NOTE: queries_unused may have changed but it's fine since nav_teacher does not use it!
+            self._populate_agent_state_to_obs(obs, nav_softmax, queries_unused,
                 traj, ended, time_step)
 
             # Ask teacher for next nav action
@@ -239,7 +236,6 @@ class VerbalAskAgent(AskAgent):
                        time_step >= ob['traj_len'] - 1:
                         ended[i] = True
 
-                assert queries_used[i] + queries_unused[i] == ob['max_queries']
                 assert queries_unused[i] >= 0
 
             # Early exit if all ended
