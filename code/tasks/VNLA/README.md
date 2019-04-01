@@ -36,7 +36,6 @@ This section helps you reproduce **Table 3** in our paper.
 
 You need to train one additional agent: an agent trained without subgoals and with direct advisor. 
 
-Train an agent with subgoals:
 ```
 $ bash train_subgoal_effects.sh no_subgoal
 ```
