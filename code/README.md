@@ -32,7 +32,7 @@ to tell `cmake` where Python is installed by Anaconda.
 $ rm $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
 $ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
 ```
-where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
+where `OPENCV_REPO` is where opencv is cloned, `ANACONDA_HOME` is Anaconda's home directory, and `PYTHON_FOLDER` is where Python is installed by Anaconda (e.g., for Python 3.6, it is `python3.6`). 
 
 ### 2. Build simulator
 
