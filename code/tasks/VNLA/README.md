@@ -28,7 +28,7 @@ For example, train an agent with a `random` help-requesting policy
 $ bash train_main_results.sh random
 ```
 
-Evaluate the agent after it is trained on `test seen`
+Evaluate the agent on `test seen` after it is trained 
 ```
 $ bash eval_main_results.sh random seen
 ```
