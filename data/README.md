@@ -8,9 +8,12 @@ To download data, run
 $ bash download.sh
 ```
 
-The following directories will be created:
+The following directories and files will be created:
 * `asknav` and `noroom`: VNLA datasets. Please read our paper for more detail about each dataset.
+* `connectivity`: environment graphs.
 * `img_features`: precomputed image embeddings computed by ResNet pretrained on ImageNet. 
+* `region_label.txt`: room names. 
+* `accepted_objects.txt`: object labels.
 
 ### 2. Download Matterport3D dataset
 
@@ -25,7 +28,7 @@ We provide the script `unzip_matterport.sh` in this directory to help you unzip 
 $ bash unzip_matterport $matter_root
 ```
 
-where `$matter_root` is the Matterport3D dataset top folder where `matter_root/v1/scans/` is located.  
+where `$matter_root` is the Matterport3D dataset top folder where `$matter_root/v1/scans/` is located.  
 
 
 

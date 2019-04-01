@@ -25,14 +25,14 @@ run
 ```
 $ cmake -DPYTHON_EXECUTABLE:FILEPATH=$(which python) .. 
 ```
-to tell `cmake` where Python is installed. 
+to tell `cmake` where Python is installed by Anaconda. 
 
 * `OpenCV does not support OpenGL`: you may have to install OpenCV from source with OpenGL support. Follow [this guide](https://www.learnopencv.com/install-opencv3-on-ubuntu/), then link `cv2.so` to you your Anaconda site-packages directory:
 ```
-$ rm $ANACONDA_HOME/lib/python2.7/site-packages/cv2.so
-$ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/python2.7/site-packages/cv2.so
+$ rm $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
+$ ln -s $OPENCV_REPO/build/lib/cv2.so $ANACONDA_HOME/lib/$PYTHON_FOLDER/site-packages/cv2.so
 ```
-where `OPENCV_REPO` is where opencv is cloned and `ANACONDA_HOME` is Anaconda's home directory. 
+where `OPENCV_REPO` is where opencv is cloned, `ANACONDA_HOME` is Anaconda's home directory, and `PYTHON_FOLDER` is where Python is installed by Anaconda (e.g., for Python 3.6, it is `python3.6`). 
 
 ### 2. Build simulator
 
@@ -55,7 +55,7 @@ $ python
 
 ### 3. Explore environments (optional)
 
-*Before following the instructions below, make sure you are able to run the demo in the Matterport3D repo.*
+*Before following the instructions below, make sure you are able to run the demo in the [Matterport3DSimulator](https://github.com/peteanderson80/Matterport3DSimulator) repo.*
 
 Link to the Matterport3D Dataset, which should be structured as `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg`:
 ```
@@ -69,7 +69,9 @@ $ python src/driver/driver.py [envID] [viewpointID] [init_heading]
 For example:
 
 ```
-$ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6179938779914944
+$ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 1.04
 ```
+
+Use keys A, S, D, W to adjust the camera angle, and use keys 1-9 to go an adjacent viewpoint. 
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)

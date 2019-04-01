@@ -26,6 +26,7 @@ The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
 2. [Setup simulator](https://github.com/debadeepta/learningtoask/tree/master/code). 
 3. [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA). 
+4. [Extend this project](https://github.com/debadeepta/vnla/tree/master/code/tasks/VNLA#extend-this-project). 
 
 
 Please create a Github issue or email kxnguyen@cs.umd.edu, dedey@microsoft.com for any question or feedback. 

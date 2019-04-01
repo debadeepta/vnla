@@ -1,9 +1,12 @@
 
-Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside the directory. 
+Scripts for reproducing results in the paper are in `scripts`. All scripts should be executed inside their directory. 
 
 ```
 $ cd scripts
 ```
+
+The `define_vars.sh` script defines two environment variables: `PT_DATA_DIR` (where the AskNav dataset is at) and `PT_OUTPUT_DIR` (where your models/results are saved).
+
 
 You can run a script without arguments to display its usage. For example,
 
@@ -25,7 +28,7 @@ For example, train an agent with a `random` help-requesting policy
 $ bash train_main_results.sh random
 ```
 
-Evaluate the agent after it is trained on `test seen`
+Evaluate the agent on `test seen` after it is trained 
 ```
 $ bash eval_main_results.sh random seen
 ```
@@ -34,16 +37,20 @@ $ bash eval_main_results.sh random seen
 
 This section helps you reproduce **Table 3** in our paper. 
 
-You need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
+You need to train one additional agent: an agent trained without subgoals and with direct advisor. 
 
-Train an agent with subgoals:
 ```
-$ bash train_subgoal_effects.sh subgoal
+$ bash train_subgoal_effects.sh no_subgoal
 ```
 
-Evaluate the agent with a direct advisor on `test unseen` (second row, third column of the table):
+Evaluate the agent with a direct advisor on `test unseen` (first row, `test unseen` column of the table):
 ```
-$ bash eval_subgoal_effects.sh direct_subgoal unseen
+$ bash eval_subgoal_effects.sh direct_no_subgoal unseen
+```
+
+The second and third rows of the table uses the `learned` agent. If you haven't run the `train_main_results.sh` script to train this agent, run
+```
+$ bash train_main_results.sh learned
 ```
 
 ### No room types
@@ -63,7 +70,7 @@ and evaluate it on `test seen` of `noroom`
 $ bash eval_noroom.sh noroom_random seen
 ```
 
-The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. To train this agent, run
+The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. If you haven't run the `train_main_results.sh` script to train this agent, run
 ```
 $ bash train_main_results.sh learned
 ```
@@ -73,6 +80,10 @@ Evaluate this agent on `test unseen` of `noroom`
 $ bash eval_noroom.sh asknav_learned unseen
 ```
 
+### Rule ablation
+
+We also provide scripts to run the rule ablation study (Table 7). See `train_rule_ablation.sh` and `eval_rule_ablation.sh`.
+
 ### Train with new configuration
 
 1. Set environment variables `PT_DATA_DIR` and `PT_OUTPUT_DIR` to the data directory and the output directory, respectively. See `scripts/define_vars.sh` for more detail. 
@@ -81,4 +92,6 @@ $ bash eval_noroom.sh asknav_learned unseen
 
 Besides the `verbal_hard` advisor, which we use in our paper, we also provide a `verbal_easy`, which does not aggregate repeated actions. 
 
+### Extend this project
 
+The language used in the paper is very primitive and scene-independent. To enhance the language, go to `oracle.py` and extend the `StepByStepSubgoalOracle` class. You can also enhance the help-requesting policy by adding more rules to the `AskOracle` class. Play with different kinds of language and request rule and see whether the agent can leverage them to better accomplish tasks! 
