@@ -69,7 +69,9 @@ $ python src/driver/driver.py [envID] [viewpointID] [init_heading]
 For example:
 
 ```
-$ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6179938779914944
+$ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6
 ```
+
+Then use can use keys A, S, D, W to adjust camera angle, and use keys 1-9 to go an adjacent viewpoint. 
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
