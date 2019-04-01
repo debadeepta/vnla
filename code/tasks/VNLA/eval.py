@@ -81,7 +81,7 @@ class Evaluation(object):
             final_pos = path[-1][0]
             nearest_pos = self._get_nearest(scan, goal, path)
             nav_errors = min(nav_errors, self.distances[scan][final_pos][goal])
-            oracle_errors = min(nav_errors, self.distances[scan][nearest_pos][goal])
+            oracle_errors = min(oracle_errors, self.distances[scan][nearest_pos][goal])
 
         self.scores['nav_errors'].append(nav_errors)
         self.scores['oracle_errors'].append(oracle_errors)
@@ -103,6 +103,9 @@ class Evaluation(object):
             final_room = self.panos_to_region[scan][path[-1][0]]
             self.scores['room_successes'].append(final_room == goal_room)
 
+    def check_success(self, d):
+        return d <= self.success_radius
+
     def score(self, output_file):
         ''' Evaluate each agent trajectory based on how close it got to the goal location '''
         self.scores = defaultdict(list)
@@ -122,11 +125,11 @@ class Evaluation(object):
             'steps': np.average(self.scores['trajectory_steps']),
             'length': np.average(self.scores['trajectory_lengths'])
         }
-        is_success = [(instr_id, d < self.success_radius) for d, instr_id
+        is_success = [(instr_id, self.check_success(d)) for d, instr_id
             in zip(self.scores['nav_errors'], self.scores['instr_id'])]
-        num_successes = len([i for i in self.scores['nav_errors'] if i < self.success_radius])
+        num_successes = len([d for d in self.scores['nav_errors'] if self.check_success(d)])
         score_summary['success_rate'] = float(num_successes)/float(len(self.scores['nav_errors']))
-        oracle_successes = len([i for i in self.scores['oracle_errors'] if i < self.success_radius])
+        oracle_successes = len([d for d in self.scores['oracle_errors'] if self.check_success(d)])
         score_summary['oracle_rate'] = float(oracle_successes)/float(len(self.scores['oracle_errors']))
         if not self.no_room:
             score_summary['room_success_rate'] = float(sum(self.scores['room_successes'])) / \
