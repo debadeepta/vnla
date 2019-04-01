@@ -10,6 +10,7 @@ $ bash download.sh
 
 The following directories and files will be created:
 * `asknav` and `noroom`: VNLA datasets. Please read our paper for more detail about each dataset.
+* `connectivity`: environment graphs
 * `img_features`: precomputed image embeddings computed by ResNet pretrained on ImageNet. 
 * `region_label.txt`: room names 
 * `accepted_objects.txt`: object labels
