@@ -1,3 +1,4 @@
+from __future__ import division
 import pytest
 import sys
 
@@ -7,11 +8,11 @@ from pybind11_tests import debug_enabled
 
 def test_list(capture, doc):
     with capture:
-        l = m.get_list()
-        assert l == ["overwritten"]
+        lst = m.get_list()
+        assert lst == ["overwritten"]
 
-        l.append("value2")
-        m.print_list(l)
+        lst.append("value2")
+        m.print_list(lst)
     assert capture.unordered == """
         Entry at position 0: value
         list item 0: overwritten
@@ -238,3 +239,15 @@ def test_hash():
     assert m.hash_function(Hashable(42)) == 42
     with pytest.raises(TypeError):
         m.hash_function(Unhashable())
+
+
+def test_number_protocol():
+    for a, b in [(1, 1), (3, 5)]:
+        li = [a == b, a != b, a < b, a <= b, a > b, a >= b, a + b,
+              a - b, a * b, a / b, a | b, a & b, a ^ b, a >> b, a << b]
+        assert m.test_number_protocol(a, b) == li
+
+
+def test_list_slicing():
+    li = list(range(100))
+    assert li[::2] == m.test_list_slicing(li)
