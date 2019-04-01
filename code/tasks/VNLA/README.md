@@ -48,6 +48,11 @@ Evaluate the agent with a direct advisor on `test unseen` (first row, `test unse
 $ bash eval_subgoal_effects.sh direct_no_subgoal unseen
 ```
 
+The second and third rows of the table uses the `learned` agent. If you haven't run the `train_main_results.sh` script to train this agent, run
+```
+$ bash train_main_results.sh learned
+```
+
 ### No room types
 
 This section helps you reproduce **Table 4** in our paper. 
