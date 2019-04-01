@@ -38,17 +38,9 @@ def set_path():
     if not os.path.exists(hparams.exp_dir):
         os.makedirs(hparams.exp_dir)
 
-    hparams.result_dir = os.path.join(hparams.exp_dir, 'results')
-    if not os.path.exists(hparams.result_dir):
-        os.makedirs(hparams.result_dir)
-
-    hparams.snapshot_dir = os.path.join(hparams.exp_dir, 'snapshots')
-    if not os.path.exists(hparams.snapshot_dir):
-        os.makedirs(hparams.snapshot_dir)
-
-    hparams.plot_dir = os.path.join(hparams.exp_dir, 'plots')
-    if not os.path.exists(hparams.plot_dir):
-        os.makedirs(hparams.plot_dir)
+    hparams.load_path = hparams.load_path if hasattr(hparams, 'load_path') and \
+        hparams.load_path is not None else \
+        os.path.join(hparams.exp_dir, '%s_last.ckpt' % hparams.model_prefix)
 
     DATA_DIR = os.getenv('PT_DATA_DIR', '../../../data')
     hparams.data_path = os.path.join(DATA_DIR, hparams.data_dir)
@@ -100,14 +92,12 @@ def compute_ask_stats(traj):
         true = t['teacher_ask'][:end_step]
 
         total_steps += len(true)
-        total_agent_ask  += len(
-            filter(lambda x: x == AskAgent.ask_actions.index('ask'), pred))
-        total_teacher_ask += len(
-            filter(lambda x: x == AskAgent.ask_actions.index('ask'), true))
+        total_agent_ask  += sum(x == AskAgent.ask_actions.index('ask') for x in pred)
+        total_teacher_ask += sum(x == AskAgent.ask_actions.index('ask') for x in true)
         ask_pred.extend(pred)
         ask_true.extend(true)
 
-        queries_per_ep.append(len(filter(lambda x: x == 1, pred)))
+        queries_per_ep.append(sum(x == AskAgent.ask_actions.index('ask') for x in pred))
         teacher_reason = t['teacher_ask_reason'][:end_step]
         all_reasons.extend(teacher_reason)
 
@@ -123,7 +113,7 @@ def compute_ask_stats(traj):
 
     loss_str += '\n *** TEACHER ASK:'
     reason_counter = Counter(all_reasons)
-    total_asks = len(filter(lambda x: x != 'pass' and x != 'exceed', all_reasons))
+    total_asks = sum(x != 'pass' and x != 'exceed' for x in all_reasons)
     loss_str += ' ask %.3f, dont_ask %.3f, ' % (
             total_asks / len(all_reasons),
             (len(all_reasons) - total_asks) / len(all_reasons)
@@ -138,7 +128,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
     best_metrics, eval_mode):
 
     if not eval_mode:
-        print 'Training with with lr = %f' % optimizer.param_groups[0]['lr']
+        print('Training with with lr = %f' % optimizer.param_groups[0]['lr'])
 
     train_feedback = { 'nav' : hparams.nav_feedback, 'ask' : hparams.ask_feedback }
     test_feedback  = { 'nav' : 'argmax', 'ask' : 'argmax' }
@@ -173,7 +163,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
         metrics = defaultdict(dict)
         should_save_ckpt = []
 
-        for env_name, (env, evaluator) in val_envs.iteritems():
+        for env_name, (env, evaluator) in val_envs.items():
             # Get validation loss under the same conditions as training
             agent.test(env, train_feedback, use_dropout=True, allow_cheat=True)
             val_loss_avg = np.average(agent.losses)
@@ -186,7 +176,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             # Get validation distance from goal under test evaluation conditions
             traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False)
 
-            agent.results_path = os.path.join(hparams.result_dir,
+            agent.results_path = os.path.join(hparams.exp_dir,
                 '%s_%s_for_eval.json' % (hparams.model_prefix, env_name))
             agent.write_results(traj)
             score_summary, _, is_success = evaluator.score(agent.results_path)
@@ -194,10 +184,10 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             if eval_mode:
                 agent.results_path = hparams.load_path.replace('ckpt', '') + env_name + '.json'
                 agent.add_is_success(is_success)
-                print 'Save result to', agent.results_path
+                print('Save result to', agent.results_path)
                 agent.write_results(traj)
 
-            for metric, val in score_summary.iteritems():
+            for metric, val in score_summary.items():
                 if metric in ['success_rate', 'oracle_rate', 'room_success_rate',
                     'nav_error', 'length', 'steps']:
                     metrics[metric][env_name] = (val, len(traj))
@@ -232,7 +222,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
         if eval_mode:
             res = defaultdict(dict)
             for metric in metrics:
-                for k, v in metrics[metric].iteritems():
+                for k, v in metrics[metric].items():
                     res[metric][k] = v[0]
             return res
 
@@ -249,7 +239,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
                 should_save_ckpt.append('last')
 
             for env_name in should_save_ckpt:
-                save_path = os.path.join(hparams.snapshot_dir,
+                save_path = os.path.join(hparams.exp_dir,
                     '%s_%s.ckpt' % (hparams.model_prefix, env_name))
                 save(save_path, model, optimizer, iter, best_metrics, train_env)
                 print("Saved %s model to %s" % (env_name, save_path))
@@ -283,15 +273,12 @@ def train_val(seed=None):
     device = torch.device('cuda', hparams.device_id)
 
     # Resume from lastest checkpoint (if any)
-    hparams.load_path = hparams.load_path if hasattr(hparams, 'load_path') and \
-        hparams.load_path is not None else \
-        os.path.join(hparams.snapshot_dir, '%s_last.ckpt' % hparams.model_prefix)
     if os.path.exists(hparams.load_path):
         print('Load model from %s' % hparams.load_path)
         ckpt = load(hparams.load_path, device)
         start_iter = ckpt['iter']
     else:
-        if hasattr(hparams, 'load_path') and hasattr(hparams, 'eval_only') and hparams.eval_only:
+        if hasattr(args, 'load_path') and hasattr(args, 'eval_only') and args.eval_only:
             sys.exit('load_path %s does not exist!' % hparams.load_path)
         ckpt = None
         start_iter = 0
@@ -383,13 +370,13 @@ if __name__ == "__main__":
             for seed in seeds:
                 this_metrics = train_val(seed=seed)
                 for metric in this_metrics:
-                    for k, v in this_metrics[metric].iteritems():
+                    for k, v in this_metrics[metric].items():
                         if 'rate' in metric:
                             v *= 100
                         metrics[metric][k].append(v)
             for metric in metrics:
-                for k, v in metrics[metric].iteritems():
-                   print '%s %s: %.2f %.2f' % (metric, k, np.average(v), stats.sem(v) * 1.95)
+                for k, v in metrics[metric].items():
+                   print('%s %s: %.2f %.2f' % (metric, k, np.average(v), stats.sem(v) * 1.95))
         else:
             train_val()
 
