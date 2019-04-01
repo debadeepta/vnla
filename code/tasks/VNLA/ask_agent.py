@@ -37,7 +37,7 @@ class AskAgent(BaseAgent):
     feedback_options = ['teacher', 'argmax', 'sample']
 
     def __init__(self, model, hparams, device, should_make_advisor=True):
-	super(AskAgent, self).__init__()
+        super(AskAgent, self).__init__()
         self.model = model
         self.episode_len = hparams.max_episode_length
         self.nav_criterion = nn.CrossEntropyLoss(ignore_index = self.nav_actions.index('<ignore>'))
@@ -135,11 +135,11 @@ class AskAgent(BaseAgent):
         sys.exit('Invalid feedback option')
 
     def _populate_agent_state_to_obs(self, obs, *args):
-        nav_softmax, queries_used, traj, ended, time_step = args
+        nav_softmax, queries_unused, traj, ended, time_step = args
         nav_dist = nav_softmax.data.tolist()
         for i, ob in enumerate(obs):
             ob['nav_dist'] = nav_dist[i]
-            ob['queries_used'] = queries_used[i]
+            ob['queries_unused'] = queries_unused[i]
             ob['agent_path'] = traj[i]['agent_path']
             ob['ended'] = ended[i]
             ob['time_step'] = time_step
@@ -201,11 +201,9 @@ class AskAgent(BaseAgent):
         teacher_actions = [None] * batch_size
 
         env_action = [None] * batch_size
-        queries_used = [0] * batch_size
         queries_unused = [ob['max_queries'] for ob in obs]
 
         episode_len = max(ob['traj_len'] for ob in obs)
-
 
         for time_step in range(episode_len):
 
@@ -221,11 +219,11 @@ class AskAgent(BaseAgent):
                 if len(ob['navigableLocations']) <= 1:
                     nav_mask_indices.append((i, self.nav_actions.index('forward')))
 
-                if queries_used[i] >= ob['max_queries']:
+                if queries_unused[i] <= 0:
                     ask_mask_indices.append((i, self.ask_actions.index('ask')))
 
-            nav_logit_mask[zip(*nav_mask_indices)] = 1
-            ask_logit_mask[zip(*ask_mask_indices)] = 1
+            nav_logit_mask[list(zip(*nav_mask_indices))] = 1
+            ask_logit_mask[list(zip(*ask_mask_indices))] = 1
 
             # Image features
             f_t = self._feature_variable(obs)
@@ -238,7 +236,7 @@ class AskAgent(BaseAgent):
                 self.model.decode(a_t, q_t, f_t, decoder_h, ctx, seq_mask,
                     nav_logit_mask, ask_logit_mask, budget=b_t, cov=cov)
 
-            self._populate_agent_state_to_obs(obs, nav_softmax, queries_used,
+            self._populate_agent_state_to_obs(obs, nav_softmax, queries_unused,
                 traj, ended, time_step)
 
             # Query teacher for next actions
@@ -280,8 +278,6 @@ class AskAgent(BaseAgent):
                     subgoals[i] = self.advisor(obs[i])
                     # Reset subgoal step index
                     n_subgoal_steps[i] = 0
-                    # Increment queries used
-                    queries_used[i] += 1
                     # Decrement queries unused
                     queries_unused[i] -= 1
 
@@ -299,7 +295,7 @@ class AskAgent(BaseAgent):
             obs = self.env.step(env_action)
 
             # Bookkeeping
-	    ask_target_list = ask_target.data.tolist()
+            ask_target_list = ask_target.data.tolist()
             for i, ob in enumerate(obs):
                 if not ended[i]:
                     traj[i]['agent_path'].append((ob['viewpoint'], ob['heading'], ob['elevation']))
@@ -316,7 +312,6 @@ class AskAgent(BaseAgent):
                        time_step >= ob['traj_len'] - 1:
                         ended[i] = True
 
-                assert queries_used[i] + queries_unused[i] == ob['max_queries']
                 assert queries_unused[i] >= 0
 
             # Early exit if all ended
@@ -325,7 +320,6 @@ class AskAgent(BaseAgent):
 
         if not self.is_eval:
             self._compute_loss()
-            #print(self.losses[-1])
 
         return traj
 
