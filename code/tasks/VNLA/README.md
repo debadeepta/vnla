@@ -82,7 +82,7 @@ $ bash eval_noroom.sh asknav_learned unseen
 
 ### Rule ablation
 
-We also provide scripts to run the rule ablation study (Table 7). See `train_rule_ablation.sh` and `eval_rule_ablation.sh`
+We also provide scripts to run the rule ablation study (Table 7). See `train_rule_ablation.sh` and `eval_rule_ablation.sh`.
 
 ### Train with new configuration
 
