@@ -98,7 +98,7 @@ class Attention(nn.Module):
 
         h_tilde = self.tanh(self.linear_out(h_tilde))
 
-	# Update coverage vector
+        # Update coverage vector
         if hasattr(self, 'cov_rnn') and hasattr(self, 'cov_linear'):
             cov_expand = cov.view(-1, cov.size(2))
             context_expand = context.view(-1, context.size(2))
