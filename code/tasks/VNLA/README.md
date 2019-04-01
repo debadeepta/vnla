@@ -62,7 +62,7 @@ and evaluate it on `test seen` of `noroom`
 $ bash eval_noroom.sh noroom_random seen
 ```
 
-The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. To train this agent, run
+The third row of the table derives from evaluating the `learned` agent trained on the `asknav` dataset. If you haven't run the `train_main_results.sh` script to train this agent, run
 ```
 $ bash train_main_results.sh learned
 ```
