@@ -34,7 +34,7 @@ $ bash eval_main_results.sh random seen
 
 This section helps you reproduce **Table 3** in our paper. 
 
-You need to train two agents: one trained with subgoals (indirect advisor) and another trained without subgoals (direct advisor). 
+You need to train one additional agent: an agent trained without subgoals and with direct advisor. 
 
 Train an agent with subgoals:
 ```
