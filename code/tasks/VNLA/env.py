@@ -35,7 +35,7 @@ class EnvBatch():
             self.image_h, self.image_w, self.vfov, self.features = \
                 utils.load_img_features(img_features)
         else:
-            print 'Image features not provided'
+            print('Image features not provided')
             self.features = None
             self.image_w = 640
             self.image_h = 480
@@ -110,7 +110,6 @@ class VNLABatch():
                     1.95 * scipy.stats.sem(self.traj_len_estimates[k])))
                 assert not math.isnan(self.traj_len_estimates[k])
         else:
-
             for k in self.traj_len_estimates:
                 if k in traj_len_estimates:
                     self.traj_len_estimates[k] = traj_len_estimates[k]
@@ -148,8 +147,8 @@ class VNLABatch():
         self.reset_epoch()
 
         if self.split is not None:
-            print 'VNLABatch loaded with %d instructions, using split: %s' % (
-                len(self.data), self.split)
+            print('VNLABatch loaded with %d instructions, using split: %s' % (
+                len(self.data), self.split))
 
     def _next_minibatch(self):
         if self.ix == 0:
