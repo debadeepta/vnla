@@ -72,6 +72,6 @@ For example:
 $ python src/driver/driver.py fzynW3qQPVF 8e8d691920d14c8e8a3a2371edeaa2bd 2.6
 ```
 
-Use keys A, S, D, W to adjust camera angle, and use keys 1-9 to go an adjacent viewpoint. 
+Use keys A, S, D, W to adjust the camera angle, and use keys 1-9 to go an adjacent viewpoint. 
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
