@@ -22,7 +22,7 @@ The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda
 
 ### Let's run the code!
 
-0. Clone this repo `git clone git@github.com:debadeepta/vnla.git`. 
+0. Clone this repo `git clone --recursive git@github.com:debadeepta/vnla.git`. 
 1. [Download data](https://github.com/debadeepta/learningtoask/tree/master/data). 
 2. [Setup simulator](https://github.com/debadeepta/learningtoask/tree/master/code). 
 3. [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA). 
