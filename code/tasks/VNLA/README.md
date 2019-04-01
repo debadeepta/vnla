@@ -38,7 +38,7 @@ You need to train two agents: one trained with subgoals (indirect advisor) and a
 
 Train an agent with subgoals:
 ```
-$ bash train_subgoal_effects.sh subgoal
+$ bash train_subgoal_effects.sh no_subgoal
 ```
 
 Evaluate the agent with a direct advisor on `test unseen` (second row, third column of the table):
