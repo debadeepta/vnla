@@ -8,7 +8,7 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 
 ![](teaser/example.png)
 <p align="center">
-<img src="teaser/method.png" width="50%">
+<img src="teaser/method.png" width="80%">
 </p>
 
 ### Development system	
