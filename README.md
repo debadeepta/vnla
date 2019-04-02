@@ -7,9 +7,9 @@ Authors: [Khanh Nguyen](https://khanhptnk.github.io), [Debadeepta Dey](http://ww
 This repo contains code and data-downloading scripts for the paper [Vision-based Navigation with Language-based Assistance via Imitation Learning with Indirect Intervention](https://arxiv.org/abs/1812.04155) (CVPR 2019). We present Vision-based Navigation with Language-based Assistance (VNLA, pronounced as *"Vanilla"*), a grounded vision-language task where an agent with visual perception is guided via language to find objects in photorealistic indoor environments. 
 
 ![](teaser/example.png)
-<div style="text-align:center">
+<p align="center">
 <img src="teaser/method.png" width="50%">
-</div>
+</p>
 
 ### Development system	
 
