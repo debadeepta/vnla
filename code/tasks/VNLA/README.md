@@ -94,4 +94,4 @@ Besides the `verbal_hard` advisor, which we use in our paper, we also provide a 
 
 ### Extend this project
 
-The language used in the paper is very primitive and scene-independent. To enhance the language, go to `oracle.py` and extend the `StepByStepSubgoalOracle` class. You can also enhance the help-requesting policy by adding more rules to the `AskOracle` class. Play with different kinds of language and request rule and see whether the agent can leverage them to better accomplish tasks! 
+The language used in the paper is very primitive. To enhance the language, go to `oracle.py` and extend the `StepByStepSubgoalOracle` class. You can also enhance the help-requesting policy by adding more rules to the `AskOracle` class. Play with different kinds of language and request rule and see whether the agent can leverage them to better accomplish tasks! 
