@@ -3,7 +3,7 @@ Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/
 
 This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator/tree/v0.1). Unless specified, all of the code snippets below should be executed in this directory. 
 
-NOTE: the Matterport3D simulator has recently been updated. Our code has not been tested on the new release. Please use v0.1 of the simulator. 
+NOTE: the Matterport3D simulator has recently been updated. Our code has not been tested on the new release. Please use [v0.1](https://github.com/peteanderson80/Matterport3DSimulator/tree/v0.1) of the simulator. 
 
 ### 1. Install Matterport3D simulator
 
