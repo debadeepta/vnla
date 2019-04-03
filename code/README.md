@@ -1,11 +1,13 @@
 
 Next: [Run experiments](https://github.com/debadeepta/learningtoask/tree/master/code/tasks/VNLA)
 
-This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator). Unless specified, all of the code snippets below should be executed in this directory. 
+This directory is extended from [Peter Anderson's Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator/tree/v0.1). Unless specified, all of the code snippets below should be executed in this directory. 
+
+NOTE: the Matterport3D simulator has recently been updated. Our code has not been tested on the new release. Please use v0.1 of the simulator. 
 
 ### 1. Install Matterport3D simulator
 
-Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
+Go to [Matterport3DSimulator repo](https://github.com/peteanderson80/Matterport3DSimulator/tree/v0.1), follow the instructions to build the simulator. To test whether you have sucessfully built the simulator, inside the home directory of the Matterport3DSimulator repo, run
 ```
 $ python
 >> import sys
@@ -55,7 +57,7 @@ $ python
 
 ### 3. Explore environments (optional)
 
-*Before following the instructions below, make sure you are able to run the demo in the [Matterport3DSimulator](https://github.com/peteanderson80/Matterport3DSimulator) repo.*
+*Before following the instructions below, make sure you are able to run the demo in the [Matterport3DSimulator](https://github.com/peteanderson80/Matterport3DSimulator/tree/v0.1) repo.*
 
 Link to the Matterport3D Dataset, which should be structured as `<Matterdata>/v1/scans/<scanId>/matterport_skybox_images/*.jpg`:
 ```
