@@ -33,5 +33,11 @@ The Ubuntu requirement is not mandatory. As long as you can sucessfully Anaconda
 
 Please create a Github issue or email kxnguyen@cs.umd.edu, dedey@microsoft.com for any question or feedback. 
 
+### FAQ
+
+Q: What's the difference between this task and the [Room-to-Room](https://bringmeaspoon.org/)?
+A: In R2R, the agent is given a detailed language instruction (e.g., "Go the table, turn left, walk to the stairs, wait there") and has to execute it without being able to request additional assistance.
+
+In VNLA (our task), the agent is given a high-level end-goal (the steps for accomplishing the task are not described) (e.g., "Find a cup in the kitchen"). The agent is capable of actively requesting additional assistance via language subgoals while trying to fulfill the task.
 
 
