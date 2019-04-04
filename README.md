@@ -37,7 +37,7 @@ Please create a Github issue or email kxnguyen@cs.umd.edu, dedey@microsoft.com f
 
 Q: *What's the difference between this task and the [Room-to-Room](https://bringmeaspoon.org/)?*
 
-A: In R2R, the agent's task is given by a **detailed** language instruction (e.g., "Go the table, turn left, walk to the stairs, wait there"). The agent has to execute the instruction **without being able to request additional assistance**. 
+A: In R2R, the agent's task is given by a **detailed** language instruction (e.g., "Go the table, turn left, walk to the stairs, wait there"). The agent has to execute the instruction **without additional assistance**. 
 
 In VNLA (our task), the task is described as a **high-level end-goal** (the steps for accomplishing the task are _not_ described) (e.g., "Find a cup in the kitchen"). The agent is capable of **actively requesting additional assistance** via language subgoals while trying to fulfill the task. 
 
