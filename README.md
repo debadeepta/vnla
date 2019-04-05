@@ -35,7 +35,7 @@ Please create a Github issue or email kxnguyen@cs.umd.edu, dedey@microsoft.com f
 
 ### FAQ
 
-Q: *What's the difference between this task and the [Room-to-Room](https://bringmeaspoon.org/)?*
+Q: *What's the difference between this task and the [Room-to-Room](https://bringmeaspoon.org/) task?*
 
 A: In R2R, the agent's task is given by a **detailed** language instruction (e.g., "Go the table, turn left, walk to the stairs, wait there"). The agent has to execute the instruction **without additional assistance**. 
 
