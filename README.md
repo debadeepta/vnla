@@ -43,7 +43,7 @@ In VNLA (our task), the task is described as a **high-level end-goal** (the step
 
 ### Citation
 
-If you want to cite this work, please use the following bibtex
+If you want to cite this work, please use the following bibtex code
 
 ```
 @InProceedings{nguyen2019vnla,
