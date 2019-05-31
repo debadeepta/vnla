@@ -41,5 +41,18 @@ A: In R2R, the agent's task is given by a **detailed** language instruction (e.g
 
 In VNLA (our task), the task is described as a **high-level end-goal** (the steps for accomplishing the task are _not_ described) (e.g., "Find a cup in the kitchen"). The agent is capable of **actively requesting additional assistance** (in the form of language subgoals) while trying to fulfill the task. 
 
+### Citation
+
+If you want to cite this work, please use the following bibtex
+
+```
+@InProceedings{nguyen2019vnla,
+author = {Nguyen, Khanh and Dey, Debadeepta and Brockett, Chris and Dolan, Bill},
+title = {Vision-Based Navigation With Language-Based Assistance via Imitation Learning With Indirect Intervention},
+booktitle = {The IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+month = {June},
+year = {2019}
+}
+```
 
 
