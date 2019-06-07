@@ -8,8 +8,7 @@ This repo contains code and data-downloading scripts for the paper [Vision-based
 
 <center>
 <a href="https://www.youtube.com/watch?v=Vp6C29qTKQ0&feature=youtu.be" target="_blank"><img src="teaser/vnla_demo_video.png" 
-alt="IMAGE ALT TEXT HERE" width="560" height="315" border="10" align="middle" /></a>
-</div>
+alt="IMAGE ALT TEXT HERE" width="560" height="315" border="10"/></a>
 </center>
 
 ![](teaser/example.png)
