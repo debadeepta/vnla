@@ -25,7 +25,7 @@ Running in graphics mode is still useful for debugging and visualizing the agent
 
 We provide the script `unzip_matterport.sh` in this directory to help you unzip the data:
 ```
-$ bash unzip_matterport $matter_root
+$ bash unzip_matterport.sh $matter_root
 ```
 
 where `$matter_root` is the Matterport3D dataset top folder where `$matter_root/v1/scans/` is located.  
