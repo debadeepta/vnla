@@ -8,6 +8,8 @@ To download data, run
 $ bash download.sh
 ```
 
+**Important**: The ImageNet features are not maintained by us, so if the link would not work in the future, please visit: https://github.com/peteanderson80/Matterport3DSimulator#precomputing-resnet-image-features and click on "ResNet-152-imagenet features [380K/2.9GB]" to get the latest link.
+
 The following directories and files will be created:
 * `asknav` and `noroom`: VNLA datasets. Please read our paper for more detail about each dataset.
 * `connectivity`: environment graphs.
