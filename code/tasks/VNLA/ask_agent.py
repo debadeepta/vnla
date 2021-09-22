@@ -35,7 +35,12 @@ class AskAgent(BaseAgent):
         (0, 0, 0), # <start>
         (0, 0, 0)  # <ignore>
     ]
-    ask_actions = ['dont_ask', 'ask', '<start>', '<ignore>']
+
+    question_pool = ['arrive',  # do I arrive?
+                     'room',  # am I in the room containing the goal?
+                     'direction',  # am I on the right direction?
+                     'distance']  # is the goal still far from me?
+    ask_actions = ['dont_ask'] + question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
     feedback_options = ['teacher', 'argmax', 'sample']
 
     def __init__(self, model, hparams, device, should_make_advisor=True):
@@ -51,7 +56,7 @@ class AskAgent(BaseAgent):
             self.env_actions, self.ask_actions)
         if should_make_advisor:
             self.advisor = make_oracle(hparams.advisor, hparams.n_subgoal_steps,
-                self.nav_actions, self.env_actions)
+                self.nav_actions, self.ask_actions)
 
         self.device = device
 
@@ -145,11 +150,12 @@ class AskAgent(BaseAgent):
             ob['nav_dist'] = nav_dist[i]
             ob['queries_unused'] = queries_unused[i]
             ob['agent_path'] = traj[i]['agent_path']
+            ob['agent_ask'] = traj[i]['agent_ask']
             ob['ended'] = ended[i]
             ob['time_step'] = time_step
 
     def _should_ask(self, ended, q):
-        return not ended and q == self.ask_actions.index('ask')
+        return not ended and q in range(1, len(self.ask_actions)-2)
 
     def rollout(self):
         # Reset environment
@@ -201,7 +207,7 @@ class AskAgent(BaseAgent):
         self.ask_loss = 0
 
         subgoals = [[] for _ in range(batch_size)]
-        n_subgoal_steps = [0] * batch_size
+        # n_subgoal_steps = [0] * batch_size
         teacher_actions = [None] * batch_size
 
         env_action = [None] * batch_size
@@ -224,7 +230,8 @@ class AskAgent(BaseAgent):
                     nav_mask_indices.append((i, self.nav_actions.index('forward')))
 
                 if queries_unused[i] <= 0:
-                    ask_mask_indices.append((i, self.ask_actions.index('ask')))
+                    for question in self.question_pool:
+                        ask_mask_indices.append((i, self.ask_actions.index(question)))
 
             nav_logit_mask[list(zip(*nav_mask_indices))] = 1
             ask_logit_mask[list(zip(*ask_mask_indices))] = 1
@@ -282,15 +289,15 @@ class AskAgent(BaseAgent):
                     # Query advisor for subgoals
                     subgoals[i] = self.advisor(obs[i])
                     # Reset subgoal step index
-                    n_subgoal_steps[i] = 0
+                    # n_subgoal_steps[i] = 0
                     # Decrement queries unused
                     queries_unused[i] -= 1
 
                 # Direct advisor: If still executing a subgoal, overwrite agent's
                 #   decision by advisor's decision.
-                if n_subgoal_steps[i] < len(subgoals[i]):
-                    a_t_list[i] = subgoals[i][n_subgoal_steps[i]]
-                    n_subgoal_steps[i] += 1
+                # if n_subgoal_steps[i] < len(subgoals[i]):
+                #    a_t_list[i] = subgoals[i][n_subgoal_steps[i]]
+                #    n_subgoal_steps[i] += 1
 
                 # Map the agent's action back to the simulator's action space.
                 env_action[i] = self.teacher.interpret_agent_action(a_t_list[i], obs[i])

@@ -18,7 +18,7 @@ from pprint import pprint
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from scipy import stats
 
-from utils import read_vocab,write_vocab,build_vocab,Tokenizer,padding_idx,timeSince
+from utils import read_vocab,write_vocab,build_vocab,Tokenizer,padding_idx,timeSince, load_panos_to_region
 from env import VNLABatch
 from model import AttentionSeq2SeqModel
 from ask_agent import AskAgent
@@ -72,16 +72,19 @@ def load(path, device):
     set_path()
     return ckpt
 
-def compute_ask_stats(traj):
+def compute_ask_stats(traj,agent):
     total_steps = 0
     total_agent_ask = 0
     total_teacher_ask = 0
     queries_per_ep = []
     ask_pred = []
     ask_true = []
+    bad_questions = []
 
     all_reasons = []
     loss_str = ''
+
+    nav_oracle = agent.advisor.nav_oracle
 
     for i, t in enumerate(traj):
         assert len(t['agent_ask']) == len(t['teacher_ask'])
@@ -90,14 +93,66 @@ def compute_ask_stats(traj):
 
         pred = t['agent_ask'][:end_step]
         true = t['teacher_ask'][:end_step]
+        
+        ### BAD QUESTION
+
+        path = t['agent_path']
+
+        bad_question_marks = [0] * len(path)
+
+        # bad question rule 1
+        for index in range(len(pred) - 1):
+            if pred[index] == pred[index + 1] == AskAgent.ask_actions.index('direction') and \
+                    path[index] == path[index + 1]:
+                bad_question_marks[index + 1] = 1
+        
+        # bad question rule 2
+        scan = t['scan']
+        goal_viewpoints = t['goal_viewpoints']
+
+        distance_indices = [index for index, question in enumerate(pred) if question == AskAgent.ask_actions.index('distance')]
+        for index in range(len(distance_indices)-1):
+            _, goal_point = nav_oracle._find_nearest_point(scan, path[distance_indices[index]][0], goal_viewpoints)
+            d1, _ = nav_oracle._find_nearest_point_on_a_path(scan, path[distance_indices[index]][0], path[0][0],
+                                                             goal_point)
+            d2, _ = nav_oracle._find_nearest_point_on_a_path(scan, path[distance_indices[index+1]][0], path[0][0],
+                                                             goal_point)
+            if abs(d1-d2) <= 3:
+                bad_question_marks[distance_indices[index+1]] = 1
+
+        # bad question rule 3
+        panos_to_region = load_panos_to_region(scan, None, include_region_id=True)
+        room_indices = [index for index, question in enumerate(pred) if
+                        question == AskAgent.ask_actions.index('room')]
+        for index in range(len(room_indices) - 1):
+            region_id_1, region_1 = panos_to_region[path[room_indices[index]][0]]
+            region_id_2, region_2 = panos_to_region[path[room_indices[index + 1]][0]]
+            if region_id_1 == region_id_2 and region_1 == region_2:
+                bad_question_marks[room_indices[index + 1]] = 1
+
+        # bad question rule 4
+        goal_viewpoints = t['goal_viewpoints']
+        for index in range(len(pred) - 1):
+            if pred[index] == AskAgent.ask_actions.index('arrive'):
+                d, goal_point = nav_oracle._find_nearest_point(scan, path[index][0], goal_viewpoints)
+                if d >= 4:
+                    bad_question_marks[index] = 1
+
+        bad_questions.append(sum(bad_question_marks))
+
+        ### BAD QUESTION
+
 
         total_steps += len(true)
-        total_agent_ask  += sum(x == AskAgent.ask_actions.index('ask') for x in pred)
-        total_teacher_ask += sum(x == AskAgent.ask_actions.index('ask') for x in true)
+        total_agent_ask += sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+                               for x in pred)   # TBD
+        total_teacher_ask += sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+                                 for x in true)
         ask_pred.extend(pred)
         ask_true.extend(true)
 
-        queries_per_ep.append(sum(x == AskAgent.ask_actions.index('ask') for x in pred))
+        queries_per_ep.append(sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+                                  for x in pred))
         teacher_reason = t['teacher_ask_reason'][:end_step]
         all_reasons.extend(teacher_reason)
 
@@ -107,9 +162,10 @@ def compute_ask_stats(traj):
     loss_str += ', teacher_ratio %.3f' % (total_teacher_ask / total_steps)
     loss_str += ', A/P/R/F %.3f / %.3f / %.3f / %.3f' % (
                                             accuracy_score(ask_true, ask_pred),
-                                            precision_score(ask_true, ask_pred),
-                                            recall_score(ask_true, ask_pred),
-                                            f1_score(ask_true, ask_pred))
+                                            precision_score(ask_true, ask_pred, average='macro'),
+                                            recall_score(ask_true, ask_pred, average='macro'),
+                                            f1_score(ask_true, ask_pred, average='macro'))
+    loss_str += ', bad_questions_per_ep %.1f' % (sum(bad_questions) / len(bad_questions))
 
     loss_str += '\n *** TEACHER ASK:'
     reason_counter = Counter(all_reasons)
@@ -135,8 +191,9 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
 
     start = time.time()
     sr = 'success_rate'
-
-
+    
+    print(start_iter)
+    print(end_iter)
     for idx in range(start_iter, end_iter, hparams.log_every):
         interval = min(hparams.log_every, end_iter - idx)
         iter = idx + interval
@@ -156,7 +213,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             train_ask_loss_avg = np.average(np.array(agent.ask_losses))
             loss_str += ', nav loss: %.4f' % train_nav_loss_avg
             loss_str += ', ask loss: %.4f' % train_ask_loss_avg
-            loss_str += compute_ask_stats(traj)
+            loss_str += compute_ask_stats(traj, agent)
 
         metrics = defaultdict(dict)
         should_save_ckpt = []
@@ -198,7 +255,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             loss_str += ', %s: %.2f' % ('oracle_error', score_summary['oracle_error'])
             loss_str += ', %s: %.2f' % ('length', score_summary['length'])
             loss_str += ', %s: %.2f' % ('steps', score_summary['steps'])
-            loss_str += compute_ask_stats(traj)
+            loss_str += compute_ask_stats(traj, agent)
 
             if not eval_mode and metrics[sr][env_name][0] > best_metrics[env_name]:
                 should_save_ckpt.append(env_name)

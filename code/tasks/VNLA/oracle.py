@@ -101,7 +101,7 @@ class ShortestPathOracle(object):
             return (0, 0,-1) # Look down
 
         # Otherwise decide which way to turn
-        target_rel = self.graph[ob['scan']].node[next_point]['position'] - ob['point']
+        target_rel = self.graph[ob['scan']].nodes[next_point]['position'] - ob['point']
         target_heading = math.pi / 2.0 - math.atan2(target_rel[1], target_rel[0])
         if target_heading < 0:
             target_heading += 2.0 * math.pi
@@ -170,15 +170,13 @@ class ShortestPathOracle(object):
 
 
 
-class AskOracle(object):
-
-    DONT_ASK = 0
-    ASK = 1
+class AskOracle(object):  #### Change the asking teacher here ####
 
     def __init__(self, hparams, agent_ask_actions):
         self.deviate_threshold = hparams.deviate_threshold
         self.uncertain_threshold = hparams.uncertain_threshold
         self.unmoved_threshold = hparams.unmoved_threshold
+        self.same_room_threshold = hparams.same_room_threshold
         self.agent_ask_actions = agent_ask_actions
 
         self.rule_a_e = hasattr(hparams, 'rule_a_e') and hparams.rule_a_e
@@ -187,7 +185,7 @@ class AskOracle(object):
     def _should_ask_rule_a_e(self, ob, nav_oracle=None):
 
         if ob['queries_unused'] <= 0:
-            return self.DONT_ASK, 'exceed'
+            return self.agent_ask_actions.index('dont_ask'), 'exceed'
 
         scan = ob['scan']
         current_point = ob['viewpoint']
@@ -196,35 +194,35 @@ class AskOracle(object):
         agent_decision = int(np.argmax(ob['nav_dist']))
         if current_point == goal_point and \
            agent_decision == nav_oracle.agent_nav_actions.index('forward'):
-            return self.ASK, 'arrive'
+            return self.agent_ask_actions.index('arrive'), 'arrive'
 
         start_point = ob['init_viewpoint']
         d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point, start_point, goal_point)
         if d > self.deviate_threshold:
-            return self.ASK, 'deviate'
+            return self.agent_ask_actions.index('direction'), 'deviate'
 
-        return self.DONT_ASK, 'pass'
+        return self.agent_ask_actions.index('dont_ask'), 'pass'
 
     def _should_ask_rule_b_d(self, ob, nav_oracle=None):
 
         if ob['queries_unused'] <= 0:
-            return self.DONT_ASK, 'exceed'
+            return self.agent_ask_actions.index('dont_ask'), 'exceed'
 
         agent_dist = ob['nav_dist']
         uniform = [1. / len(agent_dist)] * len(agent_dist)
         entropy_gap = scipy.stats.entropy(uniform) - scipy.stats.entropy(agent_dist)
         if entropy_gap < self.uncertain_threshold - 1e-9:
-            return self.ASK, 'uncertain'
+            return self.agent_ask_actions.index('instruction'), 'uncertain'
 
         if len(ob['agent_path']) >= self.unmoved_threshold:
             last_nodes = [t[0] for t in ob['agent_path']][-self.unmoved_threshold:]
             if all(node == last_nodes[0] for node in last_nodes):
-                return self.ASK, 'unmoved'
+                return self.agent_ask_actions.index('distance'), 'unmoved'
 
         if ob['queries_unused'] >= ob['traj_len'] - ob['time_step']:
-            return self.ASK, 'why_not'
+            return self.agent_ask_actions.index('instruction'), 'why_not'
 
-        return self.DONT_ASK, 'pass'
+        return self.agent_ask_actions.index('dont_ask'), 'pass'
 
     def _should_ask(self, ob, nav_oracle=None):
 
@@ -235,66 +233,64 @@ class AskOracle(object):
             return self._should_ask_rule_b_d(ob, nav_oracle=nav_oracle)
 
         if ob['queries_unused'] <= 0:
-            return self.DONT_ASK, 'exceed'
+            return self.agent_ask_actions.index('dont_ask'), 'exceed'
 
         # Find nearest point on the current shortest path
         scan = ob['scan']
         current_point = ob['viewpoint']
         # Find nearest goal to current point
-        _, goal_point = nav_oracle._find_nearest_point(scan, current_point, ob['goal_viewpoints'])
+        d, goal_point = nav_oracle._find_nearest_point(scan, current_point, ob['goal_viewpoints'])
 
-        # Rule (e): ask if the goal has been reached but the agent decides to
-        # go forward
+        panos_to_region = utils.load_panos_to_region(scan, None, include_region_id=False)
+
+        # Rule (e): ask if the goal has been reached
         agent_decision = int(np.argmax(ob['nav_dist']))
-        if current_point == goal_point and \
-           agent_decision == nav_oracle.agent_nav_actions.index('forward'):
-            return self.ASK, 'arrive'
+        if current_point == goal_point or agent_decision == nav_oracle.agent_nav_actions.index('<end>'):
+            return self.agent_ask_actions.index('arrive'), 'arrive'
 
-        start_point = ob['init_viewpoint']
-        # Find closest point to the current point on the path from start point
-        # to goal point
-        d, _ = nav_oracle._find_nearest_point_on_a_path(scan, current_point,
-            start_point, goal_point)
         # Rule (a): ask if the agent deviates too far from the optimal path
         if d > self.deviate_threshold:
-            return self.ASK, 'deviate'
+            return self.agent_ask_actions.index('direction'), 'deviate'
+
+        # Rule (c): ask if not moving for too long
+        if len(ob['agent_path']) >= self.unmoved_threshold:
+            last_nodes = [t[0] for t in ob['agent_path']][-self.unmoved_threshold:]
+            if all(node == last_nodes[0] for node in last_nodes):
+                return self.agent_ask_actions.index('distance'), 'unmoved'
+
+        # Rule (f): ask if staying in the same room for too long
+        if len(ob['agent_path']) >= self.same_room_threshold:
+            last_ask = [a for a in ob['agent_ask']][-self.same_room_threshold:]
+            last_nodes = [t[0] for t in ob['agent_path']][-self.same_room_threshold:]
+            if all(panos_to_region[node] == panos_to_region[last_nodes[0]] for node in last_nodes) and \
+               self.agent_ask_actions.index('room') not in last_ask:
+                return self.agent_ask_actions.index('room'), 'same_room'
 
         # Rule (b): ask if uncertain
         agent_dist = ob['nav_dist']
         uniform = [1. / len(agent_dist)] * len(agent_dist)
         entropy_gap = scipy.stats.entropy(uniform) - scipy.stats.entropy(agent_dist)
         if entropy_gap < self.uncertain_threshold - 1e-9:
-            return self.ASK, 'uncertain'
+            return self.agent_ask_actions.index('direction'), 'uncertain'
 
-        # Rule (c): ask if not moving for too long
-        if len(ob['agent_path']) >= self.unmoved_threshold:
-            last_nodes = [t[0] for t in ob['agent_path']][-self.unmoved_threshold:]
-            if all(node == last_nodes[0] for node in last_nodes):
-                return self.ASK, 'unmoved'
+        return self.agent_ask_actions.index('dont_ask'), 'pass'
 
-        # Rule (d): ask to spend all budget at the end
-        if ob['queries_unused'] >= ob['traj_len'] - ob['time_step']:
-            return self.ASK, 'why_not'
-
-        return self.DONT_ASK, 'pass'
-
-    def _map_env_action_to_agent_action(self, action, ob):
+    def _add_ignore(self, action, ob):
         if ob['ended']:
             return self.agent_ask_actions.index('<ignore>')
-        if action == self.DONT_ASK:
-            return self.agent_ask_actions.index('dont_ask')
-        return self.agent_ask_actions.index('ask')
+        else:
+            return action
 
     def __call__(self, obs, nav_oracle):
         should_ask_fn = functools.partial(self._should_ask, nav_oracle=nav_oracle)
         actions, reasons = zip(*list(map(should_ask_fn, obs)))
-        actions = list(map(self._map_env_action_to_agent_action, actions, obs))
+        actions = list(map(self._add_ignore, actions, obs))
         return actions, reasons
 
 
 class MultistepShortestPathOracle(ShortestPathOracle):
 
-    def __init__(self, n_steps, agent_nav_actions, env_nav_actions):
+    def __init__(self, n_steps, agent_nav_actions):
         super(MultistepShortestPathOracle, self).__init__(agent_nav_actions)
         self.sim = MatterSim.Simulator()
         self.sim.setRenderingEnabled(False)
@@ -305,7 +301,6 @@ class MultistepShortestPathOracle(ShortestPathOracle):
             os.path.join(os.getenv('PT_DATA_DIR', '../../../data'), 'connectivity'))
         self.sim.init()
         self.n_steps = n_steps
-        self.env_nav_actions = env_nav_actions
 
     def _shortest_path_actions(self, ob):
         actions = []
@@ -375,15 +370,13 @@ class NextOptimalOracle(object):
 
 class StepByStepSubgoalOracle(object):
 
-    def __init__(self, n_steps, agent_nav_actions, env_nav_actions, mode=None):
+    def __init__(self, n_steps, agent_nav_actions, agent_ask_actions, mode=None):
         self.type = 'step_by_step'
-        self.nav_oracle = make_oracle('direct', n_steps, agent_nav_actions, env_nav_actions)
+        self.nav_oracle = make_oracle('direct', n_steps, agent_nav_actions)
         self.agent_nav_actions = agent_nav_actions
-        if mode == 'easy':
-            self._map_actions_to_instruction = self._map_actions_to_instruction_easy
-        elif mode == 'hard':
-            self._map_actions_to_instruction = self._map_actions_to_instruction_hard
-        else:
+        self.agent_ask_actions = agent_ask_actions
+        self.mode = mode
+        if mode not in ['easy', 'hard', 'qa']:
             sys.exit('unknown step by step mode!')
 
     def add_scans(self, scans):
@@ -402,6 +395,59 @@ class StepByStepSubgoalOracle(object):
         elif action_name == '<ignore>':
             return ''
         return None
+
+    def _answer_question(self, actions, ob, q):  #### Change the agent's interpretation of the answers here ####
+        scan = ob['scan']
+        instr = ob['instruction']
+        current_viewpoint = ob['viewpoint']
+        start_viewpoint = ob['init_viewpoint']
+        goal_viewpoints = ob['goal_viewpoints']
+
+        panos_to_region = utils.load_panos_to_region(scan, None, include_region_id=True)
+        current_region_id, current_region = panos_to_region[current_viewpoint]
+        goal_region_ids = []
+        for viewpoint in goal_viewpoints:
+            id, region = panos_to_region[viewpoint]
+            goal_region_ids.append(id)
+            goal_region = region
+
+        d, goal_point = self.nav_oracle._find_nearest_point(scan, current_viewpoint, ob['goal_viewpoints'])
+
+        actions_names = [self._make_action_name(action) for action in actions]
+
+        # answer for 'do I arrive?'
+        if self.agent_ask_actions[q] == 'arrive':
+            if current_viewpoint in goal_viewpoints:
+                return 'stop .', 'replace'
+            else:
+                return 'go, ', 'prepend'
+
+        # answer for 'am I in the right room?'
+        if self.agent_ask_actions[q] == 'room':
+            if current_region == goal_region and current_region_id in goal_region_ids:
+                if ('find' in instr) and (' in ' in instr):
+                    return instr[instr.index('find'):instr.index(' in ')] + ', ', 'prepend'
+                else:
+                    return instr, 'replace'
+            else:
+                return 'exit room, ', 'prepend'
+
+        # answer for 'am I on the right direction?'
+        elif self.agent_ask_actions[q] == 'direction':
+            if 'turn' in actions_names[0]:
+                return 'turn around, ', 'prepend'
+            else:
+                return 'go straight, ', 'prepend'
+
+        # answer for 'is the goal far from me?'
+        elif self.agent_ask_actions[q] == 'distance':
+            if d >= 10:
+                return 'far, ', 'prepend'
+            elif d >= 5:
+                return 'middle, ', 'prepend'
+            else:
+                return 'close, ', 'prepend'
+    # TBD
 
     def _map_actions_to_instruction_hard(self, actions):
         agg_actions = []
@@ -429,31 +475,41 @@ class StepByStepSubgoalOracle(object):
                     instruction.append('%s %d steps' % (action_name, c))
             elif action_name != '':
                 instruction.append(action_name)
-        return ' , '.join(instruction)
+        return ' , '.join(instruction), 'prepend'
 
     def _map_actions_to_instruction_easy(self, actions):
         instruction = []
         for a in actions:
             instruction.append(self._make_action_name(a))
-        return ' , '.join(instruction)
+        return ' , '.join(instruction), 'prepend'
 
-    def __call__(self, ob):
+    def __call__(self, ob, q=None):
         action_seq = self.nav_oracle(ob)
-        verbal_instruction = self._map_actions_to_instruction(action_seq)
-        return action_seq, verbal_instruction
+        if self.mode == 'qa':
+            assert(q is not None)
+            verbal_instruction, edit_type = self._answer_question(action_seq, ob, q)
+        elif self.mode == 'easy':
+            verbal_instruction, edit_type = self._map_actions_to_instruction_easy(action_seq)
+        elif self.mode == 'hard':
+            verbal_instruction, edit_type = self._map_actions_to_instruction_hard(action_seq)
+        return action_seq, verbal_instruction, edit_type
 
 
 def make_oracle(oracle_type, *args, **kwargs):
     if oracle_type == 'shortest':
+        # returns the next optimal agent action, in batch
         return ShortestPathOracle(*args, **kwargs)
     if oracle_type == 'next_optimal':
+        # returns (the next optimal agent action, the next optimal ask action, ask reason), in batch
         return NextOptimalOracle(*args, **kwargs)
     if oracle_type == 'ask':
+        # returns (the next optimal ask action, ask reason), in batch
         return AskOracle(*args, **kwargs)
-
     if oracle_type == 'direct':
+        # returns the next n_step of optimal agent actions, NOT in batch
         return MultistepShortestPathOracle(*args, **kwargs)
     if oracle_type == 'verbal':
+        # returns (the next n_step of optimal agent actions, verbal instruction in string), NOT in batch
         return StepByStepSubgoalOracle(*args, **kwargs)
 
     return None

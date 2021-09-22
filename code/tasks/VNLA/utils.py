@@ -223,12 +223,15 @@ def load_region_label_to_name():
             region_label_to_name[code] = label
     return region_label_to_name
 
-def load_panos_to_region(house_id, region_label_to_name):
+def load_panos_to_region(house_id, region_label_to_name, include_region_id = False):
     pano_file = '../../data/v1/scans/' + house_id + \
         '/house_segmentations/' + 'panorama_to_region.txt'
     panos_to_region = {}
     with open(pano_file) as f:
         for line in f:
             values = line.rstrip().split()
-            panos_to_region[values[1]] = values[-1]
+            if include_region_id:
+                panos_to_region[values[1]] = [values[-2], values[-1]]
+            else:
+                panos_to_region[values[1]] = values[-1]
     return panos_to_region

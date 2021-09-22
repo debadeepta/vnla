@@ -15,7 +15,7 @@ config_file="configs/verbal_hard.json"
 output_dir="main_$exp_name"
 
 extra=""
-model_name="${output_dir}_nav_sample_ask_teacher"
+model_name="${output_dir}_nav_sample_ask_sample"
 
 if [ "$exp_name" == "none" ]
 then

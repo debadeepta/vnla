@@ -237,10 +237,14 @@ class VNLABatch():
         self.env.makeActions(actions)
         return self._get_obs()
 
-    def prepend_instruction(self, idx, instr):
-        ''' Prepend subgoal to end-goal. '''
-
-        self.instructions[idx] = instr + ' . ' + self.batch[idx]['instruction']
+    def modify_instruction(self, idx, instr, type):
+        ''' Modify end-goal. '''
+        if type == 'prepend':
+            self.instructions[idx] = instr + self.batch[idx]['instruction']
+        elif type == 'append':
+            self.instructions[idx] = self.batch[idx]['instruction'] + instr
+        elif type == 'replace':
+            self.instructions[idx] = instr
 
     def get_obs(self):
         return self._get_obs()
