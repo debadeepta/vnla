@@ -1,3 +1,57 @@
+# Setting Up
+
+## Clone the repo recursively
+```
+git clone --recurse-submodules https://github.com/Yehezkiel01/vnla.git yehez-vnla
+```
+
+## Install anaconda
+https://docs.anaconda.com/anaconda/install/index.html
+
+## Create conda environment
+For consistency, create conda environment from our yaml file.
+
+```
+conda env create -f environment.yml
+```
+
+Note: we are using pytorch 1.0.1 and gpu version 10.0. For other versions, check [here](https://pytorch.org/get-started/previous-versions/) on how to install.
+
+## Download Data
+More detail on [download data](https://github.com/debadeepta/vnla/tree/master/data).
+
+### Download NVLA Data
+Do this in the data folder
+
+```
+cd data
+bash download.sh
+```
+
+### Download Matterport Data
+Big data of size ~80 GB. If you have downloaded this once, you just need to remember the matterport root folder.
+
+Otherwise, follow the original download data tutorial.
+
+## Setup Simulator
+Move to the code folder and run the setup.sh script
+
+```
+bash setup.sh
+```
+
+Crate symlink to matterport root folder.
+
+```
+ln -s $matter_root data
+```
+
+## Running Script
+```
+cd ~/yehez-vnla/code/tasks/VNLA/scripts
+bash train_main_results.sh learned 0
+```
+
 # NUS-CP3106
 <b>AY 2019/2020 Semester II</b>.  
 <b>By Yuxuan</b>.  

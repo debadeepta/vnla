@@ -9,7 +9,7 @@ yes | rm -rf Matterport3DSimulator
 
 wget -O vnla_data.zip https://www.dropbox.com/s/w0n6hzjky5jcea4/vnla_data.zip?dl=1
 unzip vnla_data.zip
-mv vnla_data/* .
+cp vnla_data/* .
 rm -rf vnla_data
 
 mkdir img_features

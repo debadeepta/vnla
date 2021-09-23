@@ -1,0 +1,10 @@
+# Ignore everything since most are big data
+*
+
+# Except these files
+!.gitignore
+!*.sh
+!README.md
+
+# TODO: Rebundle with other VNLA Data into another dropbox zip
+!asknav/verbal_qa_vocab.txt

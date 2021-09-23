@@ -1,0 +1,8 @@
+# Contains binary data
+build/
+
+# Symbolic link towards 3D Matterport data
+data
+
+# VNLA output
+tasks/VNLA/output/
