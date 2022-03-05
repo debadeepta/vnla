@@ -55,7 +55,7 @@ class EncoderLSTM(nn.Module):
         embeds = self.drop(embeds)
         state = self.init_state(inputs)
 
-        packed_embeds = pack_padded_sequence(embeds, sorted_lengths, batch_first=True)
+        packed_embeds = pack_padded_sequence(embeds, sorted_lengths.to('cpu'), batch_first=True)
         enc_h, state = self.lstm(packed_embeds, state)
 
         state = (self.encoder2decoder(state[0]), self.encoder2decoder(state[1]))

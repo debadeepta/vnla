@@ -19,10 +19,11 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 from scipy import stats
 
 from utils import read_vocab,write_vocab,build_vocab,Tokenizer,padding_idx,timeSince, load_panos_to_region
-from env import VNLABatch
+from m1_env import VNLABatch
 from model import AttentionSeq2SeqModel
 from ask_agent import AskAgent
 from verbal_ask_agent import VerbalAskAgent
+from m1_agent import M1Agent
 
 from eval import Evaluation
 from oracle import *
@@ -46,6 +47,10 @@ def set_path():
     hparams.data_path = os.path.join(DATA_DIR, hparams.data_dir)
     hparams.img_features = os.path.join(DATA_DIR, 'img_features/ResNet-152-imagenet.tsv')
 
+    # Imitation learning path
+    hparams.start_path = "output/main_learned_nav_sample_ask_sample/main_learned_nav_sample_ask_sample_val_seen.ckpt"
+    # TODO: add another path for val_unseen.ckpt
+
 def save(path, model, optimizer, iter, best_metrics, train_env):
     ckpt = {
             'model_state_dict': model.state_dict(),
@@ -59,16 +64,7 @@ def save(path, model, optimizer, iter, best_metrics, train_env):
     torch.save(ckpt, path)
 
 def load(path, device):
-    global hparams
     ckpt = torch.load(path, map_location=device)
-    hparams = ckpt['hparams']
-
-    # Overwrite hparams by args
-    for flag in vars(args):
-        value = getattr(args, flag)
-        if value is not None:
-            setattr(hparams, flag, value)
-
     set_path()
     return ckpt
 
@@ -186,7 +182,8 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
     if not eval_mode:
         print('Training with with lr = %f' % optimizer.param_groups[0]['lr'])
 
-    train_feedback = { 'nav' : hparams.nav_feedback, 'ask' : hparams.ask_feedback }
+    # Ask feedback does not matter as we are using epsilon greedy
+    train_feedback = { 'nav' : 'argmax', 'ask' : 'argmax' }
     test_feedback  = { 'nav' : 'argmax', 'ask' : 'argmax' }
 
     start = time.time()
@@ -195,42 +192,28 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
     print(start_iter)
     print(end_iter)
     for idx in range(start_iter, end_iter, hparams.log_every):
+        loss_str = ''
+
         interval = min(hparams.log_every, end_iter - idx)
-        iter = idx + interval
+        start_episode = idx
+        end_episode = idx + interval
+        iter = end_episode          # Legacy code still use this variable
 
         # Train for log_every iterations
         if eval_mode:
             loss_str = '\n * eval mode'
         else:
-            traj = agent.train(train_env, optimizer, interval, train_feedback)
-
-            train_losses = np.array(agent.losses)
-            assert len(train_losses) == interval
-            train_loss_avg = np.average(train_losses)
-
-            loss_str = '\n * train loss: %.4f' % train_loss_avg
-            train_nav_loss_avg = np.average(np.array(agent.nav_losses))
-            train_ask_loss_avg = np.average(np.array(agent.ask_losses))
-            loss_str += ', nav loss: %.4f' % train_nav_loss_avg
-            loss_str += ', ask loss: %.4f' % train_ask_loss_avg
-            loss_str += compute_ask_stats(traj, agent)
+            agent.train(train_env, optimizer, start_episode, end_episode, train_feedback)
 
         metrics = defaultdict(dict)
         should_save_ckpt = []
 
         # Run validation
+        eval_success_rates = [None] * 3
         for env_name, (env, evaluator) in val_envs.items():
-            # Get validation loss under the same conditions as training
-            agent.test(env, train_feedback, use_dropout=True, allow_cheat=True)
-            val_loss_avg = np.average(agent.losses)
-            loss_str += '\n * %s loss: %.4f' % (env_name, val_loss_avg)
-            val_nav_loss_avg = np.average(agent.nav_losses)
-            loss_str += ', nav loss: %.4f' % val_nav_loss_avg
-            val_ask_loss_avg = np.average(agent.ask_losses)
-            loss_str += ', ask loss: %.4f' % val_ask_loss_avg
-
             # Get validation distance from goal under test evaluation conditions
-            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False)
+            longer_time = env_name == 'val_seen_longer_time'        # This validation environment lets the agent run with maximum time
+            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False, allow_max_episode_length=longer_time)
 
             agent.results_path = os.path.join(hparams.exp_dir,
                 '%s_%s_for_eval.json' % (hparams.model_prefix, env_name))
@@ -243,6 +226,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
                 print('Save result to', agent.results_path)
                 agent.write_results(traj)
 
+            loss_str += '\n *** MAIN METRICS (%s)' % (env_name)
             for metric, val in score_summary.items():
                 if metric in ['success_rate', 'oracle_rate', 'room_success_rate',
                     'nav_error', 'length', 'steps']:
@@ -257,10 +241,19 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             loss_str += ', %s: %.2f' % ('steps', score_summary['steps'])
             loss_str += compute_ask_stats(traj, agent)
 
-            if not eval_mode and metrics[sr][env_name][0] > best_metrics[env_name]:
-                should_save_ckpt.append(env_name)
-                best_metrics[env_name] = metrics[sr][env_name][0]
-                print('best %s success rate %.3f' % (env_name, best_metrics[env_name]))
+            if not eval_mode:
+                success_rate = metrics[sr][env_name][0] * 100.0
+                idx = 0
+                if env_name == 'val_seen':
+                    idx = 1
+                elif env_name == 'val_unseen':
+                    idx = 2
+                eval_success_rates[idx] = success_rate
+
+                if env_name in best_metrics and metrics[sr][env_name][0] > best_metrics[env_name]:
+                    should_save_ckpt.append(env_name)
+                    best_metrics[env_name] = metrics[sr][env_name][0]
+                    print('best %s success rate %.3f' % (env_name, best_metrics[env_name]))
 
         if not eval_mode:
             combined_metric = (
@@ -271,6 +264,13 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
                 should_save_ckpt.append('combined')
                 best_metrics['combined'] = combined_metric
                 print('best combined success rate %.3f' % combined_metric)
+
+        if not eval_mode:
+            # Add a single datapoint to our eval
+            agent.plotter.add_eval_data_point(end_episode - 1, *eval_success_rates)
+
+            # Save graph plotter for easier tracking of DQN's performance
+            agent.plotter.save()
 
         print('%s (%d %d%%) %s' % (timeSince(start, float(iter)/end_iter),
             iter, float(iter)/end_iter*100, loss_str))
@@ -325,19 +325,34 @@ def setup(seed=None):
 def train_val(seed=None):
     ''' Train on the training set, and validate on seen and unseen splits. '''
 
+    global hparams
+
     # which GPU to use
     device = torch.device('cuda', hparams.device_id)
+
+    new_training = True
 
     # Resume from latest checkpoint (if any)
     if os.path.exists(hparams.load_path):
         print('Load model from %s' % hparams.load_path)
         ckpt = load(hparams.load_path, device)
+
+        # Reload hparams using checkpoint's hparams
+        hparams = ckpt['hparams']
+        # Overwrite hparams by args
+        for flag in vars(args):
+            value = getattr(args, flag)
+            if value is not None:
+                setattr(hparams, flag, value)
+
         start_iter = ckpt['iter']
+        new_training = False
+    elif os.path.exists(hparams.start_path):         # Continue training from imitation learning
+        print('Continue training from imitation learning phase!\nLoad model from %s' % hparams.start_path)
+        ckpt = load(hparams.start_path, device)
+        start_iter = 0              # Start iteration from 0
     else:
-        if hasattr(args, 'load_path') and hasattr(args, 'eval_only') and args.eval_only:
-            sys.exit('load_path %s does not exist!' % hparams.load_path)
-        ckpt = None
-        start_iter = 0
+        sys.exit("Checkpoint from imitation learning was not provided!")
     end_iter = hparams.n_iters
 
     # Setup seed and read vocab
@@ -371,8 +386,14 @@ def train_val(seed=None):
         from_train_env=train_env, traj_len_estimates=train_env.traj_len_estimates),
         Evaluation(hparams, [split], hparams.data_path)) for split in val_splits}
 
+    if not eval_mode:
+        # The longer_time settings will be performed when we are ran the validation
+        val_envs['val_seen_longer_time'] = val_envs['val_seen']
+
     # Build models
     model = AttentionSeq2SeqModel(len(vocab), hparams, device).to(device)
+    model.load_state_dict(ckpt['model_state_dict'])
+    target = AttentionSeq2SeqModel(len(vocab), hparams, device).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=hparams.lr,
         weight_decay=hparams.weight_decay)
@@ -382,11 +403,10 @@ def train_val(seed=None):
                      'combined'  : -1 }
 
     # Load model parameters from a checkpoint (if any)
-    if ckpt is not None:
-        model.load_state_dict(ckpt['model_state_dict'])
+    if not new_training:
         optimizer.load_state_dict(ckpt['optim_state_dict'])
-        best_metrics = ckpt['best_metrics']
         train_env.ix = ckpt['data_idx']
+        best_metrics = ckpt['best_metrics']
 
     print('')
     pprint(vars(hparams), width=1)
@@ -394,10 +414,8 @@ def train_val(seed=None):
     print(model)
 
     # Initialize agent
-    if 'verbal' in hparams.advisor:
-        agent = VerbalAskAgent(model, hparams, device)
-    elif hparams.advisor == 'direct':
-        agent = AskAgent(model, hparams, device)
+    train_evaluator = Evaluation(hparams, ['train'], hparams.data_path)
+    agent = M1Agent(model, target, hparams, device, train_evaluator)
 
     # Train
     return train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,

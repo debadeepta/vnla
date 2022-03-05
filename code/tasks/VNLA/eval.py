@@ -104,8 +104,27 @@ class Evaluation(object):
     def check_success(self, d):
         return d <= self.success_radius
 
+    def score_path(self, instr_id, path):
+        '''
+            Evaluate a single agent trajectory based on how close it gets to the goal location
+            Returns true if the agent stopped within a certain radius from one of the goal positions
+            Returns false otherwise
+        '''
+
+        # Note: This function is just a simpler implementation of _score_item
+        gt = self.gt[instr_id[:instr_id.rfind('_')]]
+        scan = gt['scan']
+
+        final_pos = path[-1][0]
+        dist_to_goal = 1e9
+        for shortest_path in gt['paths']:       # Find the minimum distance to all of the available goals
+            goal = shortest_path[-1]
+            dist_to_goal = min(dist_to_goal, self.distances[scan][final_pos][goal])
+
+        return self.check_success(dist_to_goal)
+
     def score(self, output_file):
-        ''' Evaluate each agent trajectory based on how close it got to the goal location '''
+        ''' Evaluate each agent trajectory in the output_file based on how close it got to the goal location '''
         self.scores = defaultdict(list)
         instr_ids = set(self.instr_ids)
         with open(output_file) as f:

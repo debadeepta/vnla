@@ -106,9 +106,9 @@ class VerbalAskAgent(AskAgent):
 
             # Mask out invalid actions
             nav_logit_mask = torch.zeros(batch_size,
-                                         AskAgent.n_output_nav_actions(), dtype=torch.uint8, device=self.device)
+                                         AskAgent.n_output_nav_actions(), dtype=torch.bool, device=self.device)
             ask_logit_mask = torch.zeros(batch_size,
-                                         AskAgent.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
+                                         AskAgent.n_output_ask_actions(), dtype=torch.bool, device=self.device)
 
             nav_mask_indices = []
             ask_mask_indices = []
@@ -120,8 +120,8 @@ class VerbalAskAgent(AskAgent):
                     for question in self.question_pool:
                         ask_mask_indices.append((i, self.ask_actions.index(question)))
 
-            nav_logit_mask[list(zip(*nav_mask_indices))] = 1
-            ask_logit_mask[list(zip(*ask_mask_indices))] = 1
+            nav_logit_mask[list(zip(*nav_mask_indices))] = True
+            ask_logit_mask[list(zip(*ask_mask_indices))] = True
 
             # Image features
             f_t = self._feature_variable(obs)

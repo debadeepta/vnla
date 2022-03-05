@@ -426,7 +426,7 @@ class StepByStepSubgoalOracle(object):
         if self.agent_ask_actions[q] == 'room':
             if current_region == goal_region and current_region_id in goal_region_ids:
                 if ('find' in instr) and (' in ' in instr):
-                    return instr[instr.index('find'):instr.index(' in ')] + ', ', 'prepend'
+                    return instr[instr.index('find'):instr.index(' in ')], 'replace'
                 else:
                     return instr, 'replace'
             else:
