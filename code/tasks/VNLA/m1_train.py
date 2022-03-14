@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch import optim
 import torch.nn.functional as F
+from torch.optim.swa_utils import AveragedModel
 
 import os
 import time
@@ -392,8 +393,11 @@ def train_val(seed=None):
 
     # Build models
     model = AttentionSeq2SeqModel(len(vocab), hparams, device).to(device)
-    model.load_state_dict(ckpt['model_state_dict'])
     target = AttentionSeq2SeqModel(len(vocab), hparams, device).to(device)
+    if "decoder.ask_predictor.n_averaged" in ckpt['model_state_dict'].keys():               # Swa model
+        model.decoder.ask_predictor = AveragedModel(model.decoder.ask_predictor)
+        target.decoder.ask_predictor = AveragedModel(target.decoder.ask_predictor)
+    model.load_state_dict(ckpt['model_state_dict'])
 
     optimizer = optim.Adam(model.parameters(), lr=hparams.lr,
         weight_decay=hparams.weight_decay)
