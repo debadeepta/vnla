@@ -420,7 +420,7 @@ class StepByStepSubgoalOracle(object):
             if current_viewpoint in goal_viewpoints:
                 return 'stop .', 'replace'
             else:
-                return 'go, ', 'prepend'
+                return 'go , ', 'prepend'
 
         # answer for 'am I in the right room?'
         if self.agent_ask_actions[q] == 'room':
@@ -430,23 +430,23 @@ class StepByStepSubgoalOracle(object):
                 else:
                     return instr, 'replace'
             else:
-                return 'exit room, ', 'prepend'
+                return 'exit room , ', 'prepend'
 
         # answer for 'am I on the right direction?'
         elif self.agent_ask_actions[q] == 'direction':
             if 'turn' in actions_names[0]:
-                return 'turn around, ', 'prepend'
+                return 'turn around , ', 'prepend'
             else:
-                return 'go straight, ', 'prepend'
+                return 'go straight , ', 'prepend'
 
         # answer for 'is the goal far from me?'
         elif self.agent_ask_actions[q] == 'distance':
             if d >= 10:
-                return 'far, ', 'prepend'
+                return 'far , ', 'prepend'
             elif d >= 5:
-                return 'middle, ', 'prepend'
+                return 'middle , ', 'prepend'
             else:
-                return 'close, ', 'prepend'
+                return 'close , ', 'prepend'
     # TBD
 
     def _map_actions_to_instruction_hard(self, actions):
