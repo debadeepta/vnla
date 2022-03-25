@@ -214,7 +214,8 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
         for env_name, (env, evaluator) in val_envs.items():
             # Get validation distance from goal under test evaluation conditions
             longer_time = env_name == 'val_seen_longer_time'        # This validation environment lets the agent run with maximum time
-            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False, allow_max_episode_length=longer_time)
+            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False,
+                    is_test=eval_mode, allow_max_episode_length=longer_time)
 
             agent.results_path = os.path.join(hparams.exp_dir,
                 '%s_%s_for_eval.json' % (hparams.model_prefix, env_name))
@@ -460,6 +461,7 @@ if __name__ == "__main__":
             for metric in metrics:
                 for k, v in metrics[metric].items():
                    print('%s %s: %.2f %.2f' % (metric, k, np.average(v), stats.sem(v) * 1.95))
+            M1Agent.test_plotter.save('seen' if '_seen' in hparams.load_path else 'unseen')
         else:
             # Train
             train_val()

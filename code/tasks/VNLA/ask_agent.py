@@ -40,6 +40,10 @@ class AskAgent(BaseAgent):
                      'room',  # am I in the room containing the goal?
                      'direction',  # am I on the right direction?
                      'distance']  # is the goal still far from me?
+    question_set = ['Do I arrive at the goal?',
+                    'Am I in the right room?',
+                    'Am I on the right direction?',
+                    'How far is the goal from me?']
     ask_actions = ['dont_ask'] + question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
     feedback_options = ['teacher', 'argmax', 'sample']
 
@@ -72,6 +76,9 @@ class AskAgent(BaseAgent):
         self.n_subgoal_steps  = hparams.n_subgoal_steps
 
         self.coverage_size = hparams.coverage_size if hasattr(hparams, 'coverage_size') else None
+
+        self.is_eval = False            # is_eval True for validation and testing, False for training
+        self.is_test = False            # is_test True for testing, False for validation and training
 
     @staticmethod
     def n_input_nav_actions():
@@ -363,11 +370,12 @@ class AskAgent(BaseAgent):
         self.nav_losses = []
         self.ask_losses = []
 
-    def test(self, env, feedback, use_dropout=False, allow_cheat=False):
+    def test(self, env, feedback, use_dropout=False, allow_cheat=False, is_test=False):
         ''' Evaluate once on each instruction in the current environment '''
 
         self.allow_cheat = allow_cheat
         self.is_eval = not allow_cheat
+        self.is_test = is_test
         self._setup(env, feedback)
         if use_dropout:
             self.model.train()

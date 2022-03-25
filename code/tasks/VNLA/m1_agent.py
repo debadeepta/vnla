@@ -564,6 +564,9 @@ class M1Agent(VerbalAskAgent):
                     elif self.no_ask:
                         q_t_list[i] = 0
 
+                if self.is_test:
+                    self.add_to_plotter(ended[i], q_t_list[i], time_step)
+
                 if self._should_ask(ended[i], q_t_list[i]):
                     # Query advisor for subgoal.
                     _, verbal_subgoals[i], edit_types[i] = self.advisor(obs[i], q_t_list[i])
@@ -692,11 +695,11 @@ class M1Agent(VerbalAskAgent):
         return traj
 
     # allow_max_episode_length is useful for evaluation that wants to try running for max_episode_length
-    def test(self, env, feedback, use_dropout=False, allow_cheat=False, allow_max_episode_length=False):
+    def test(self, env, feedback, use_dropout=False, allow_cheat=False, is_test=False, allow_max_episode_length=False):
         ''' Evaluate once on each instruction in the current environment '''
         self.skip_dqn_train = True          # Since torch.no_grad() would be activated
         self.allow_max_episode_length = allow_max_episode_length
-        test_return =  VerbalAskAgent.test(self, env, feedback, use_dropout, allow_cheat)
+        test_return =  VerbalAskAgent.test(self, env, feedback, use_dropout, allow_cheat, is_test)
         self.allow_max_episode_length = False       # Toggle this off after the testing
 
         return test_return

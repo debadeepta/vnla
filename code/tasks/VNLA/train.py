@@ -230,7 +230,7 @@ def train(train_env, val_envs, agent, model, optimizer, start_iter, end_iter,
             loss_str += ', ask loss: %.4f' % val_ask_loss_avg
 
             # Get validation distance from goal under test evaluation conditions
-            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False)
+            traj = agent.test(env, test_feedback, use_dropout=False, allow_cheat=False, is_test=eval_mode)
 
             agent.results_path = os.path.join(hparams.exp_dir,
                 '%s_%s_for_eval.json' % (hparams.model_prefix, env_name))
@@ -438,6 +438,7 @@ if __name__ == "__main__":
             for metric in metrics:
                 for k, v in metrics[metric].items():
                    print('%s %s: %.2f %.2f' % (metric, k, np.average(v), stats.sem(v) * 1.95))
+            VerbalAskAgent.test_plotter.save('seen' if '_seen' in hparams.load_path else 'unseen')
         else:
             # Train
             train_val()
