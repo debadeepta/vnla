@@ -48,10 +48,6 @@ def set_path():
     hparams.data_path = os.path.join(DATA_DIR, hparams.data_dir)
     hparams.img_features = os.path.join(DATA_DIR, 'img_features/ResNet-152-imagenet.tsv')
 
-    # Imitation learning path
-    hparams.start_path = "output/main_learned_nav_sample_ask_sample/main_learned_nav_sample_ask_sample_val_seen.ckpt"
-    # TODO: add another path for val_unseen.ckpt
-
 def save(path, model, optimizer, iter, best_metrics, train_env):
     ckpt = {
             'model_state_dict': model.state_dict(),

@@ -10,6 +10,8 @@ def make_parser():
         help='configuration file')
    parser.add_argument('-load_path', type=str,
         help='path to load a pretrained model')
+   parser.add_argument('-start_path', type=str,
+        help='path to load the starting model for rl')
    parser.add_argument('-exp_name', type=str,
         help='name of the experiment')
    parser.add_argument('-seed', type=int,
