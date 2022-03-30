@@ -9,7 +9,8 @@ cd ../
 
 exp_name=$1
 split=$2
-device=${3:-0}
+question_set=${3:-1}
+device=${4:-0}
 
 config_file="configs/verbal_hard.json"
 output_dir="main_$exp_name"
@@ -33,8 +34,20 @@ elif [ "$exp_name" == "learned" ]
 then
   extra=""
 else
-  echo "Usage: bash eval_main_results.sh [none|first|random|teacher|learned] [seen|unseen] [gpu_id]"
-  echo "Example: bash eval_main_results.sh learned seen 0"
+  echo "Usage: bash eval_main_results.sh [none|first|random|teacher|learned] [seen|unseen] [question_set=1|2] [gpu_id]"
+  echo "Example: bash eval_main_results.sh learned seen 1 0"
+  exit
+fi
+
+if [ $question_set == 1 ]
+then
+  extra="$extra -advisor verbal_qa"
+elif [ $question_set == 2 ]
+then
+  extra="$extra -advisor verbal_qa2"
+else
+  echo "Usage: bash eval_main_results.sh [none|first|random|teacher|learned] [seen|unseen] [question_set=1|2] [gpu_id]"
+  echo "Example: bash eval_main_results.sh learned seen 1 0"
   exit
 fi
 
@@ -44,9 +57,3 @@ extra="$extra -load_path $PT_OUTPUT_DIR/$model_name/${model_name}_val_${split}.c
 command="python -u train.py -config $config_file -exp $output_dir $extra -device $device"
 echo $command
 $command
-
-
-
-
-
-
