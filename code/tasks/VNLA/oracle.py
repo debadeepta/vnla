@@ -520,8 +520,14 @@ def make_oracle(oracle_type, *args, **kwargs):
     if oracle_type == 'verbal':
         # returns (the next n_step of optimal agent actions, verbal instruction in string), NOT in batch
         return StepByStepSubgoalOracle(*args, **kwargs)
+
+    # The second question set
+    if oracle_type == 'ask2':
+        # Return heuristic teacher for the second question set
+        # TODO: Implement ask2
+        return None
     if oracle_type == 'verbal_qa2':
-        # Return the oracle for questions answering using the second QA set
+        # Return the oracle for questions answering using the second question set
         # TODO: Implement verbal_qa2
         return None
 
