@@ -106,6 +106,9 @@ class AskAgent(BaseAgent):
         else:
             sys.exit("Advisor not recognized")
 
+    def n_output_ask_actions(self):
+        return len(self.ask_actions) - 2
+
     def _make_batch(self, obs):
         ''' Make a variable for a batch of input instructions. '''
         seq_tensor = np.array([self.env.encode(ob['instruction']) for ob in obs])
@@ -237,7 +240,7 @@ class AskAgent(BaseAgent):
             nav_logit_mask = torch.zeros(batch_size,
                 AskAgent.n_output_nav_actions(), dtype=torch.uint8, device=self.device)
             ask_logit_mask = torch.zeros(batch_size,
-                AskAgent.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
+                self.n_output_ask_actions(), dtype=torch.uint8, device=self.device)
 
             # Mask invalid actions
             nav_mask_indices = []

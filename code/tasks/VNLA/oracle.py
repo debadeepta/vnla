@@ -551,12 +551,13 @@ class AdvisorQaOracle2(object):
             return ''
         return None
 
-    def _answer_question(self, actions, ob, q, path):  #### Change the agent's interpretation of the answers here ####
+    def _answer_question(self, actions, ob, q):  #### Change the agent's interpretation of the answers here ####
         scan = ob['scan']
         instr = ob['instruction']
         current_viewpoint = ob['viewpoint']
         start_viewpoint = ob['init_viewpoint']
         goal_viewpoints = ob['goal_viewpoints']
+        path = ob['agent_path']
 
         panos_to_region = utils.load_panos_to_region(scan, None, include_region_id=True)
         current_region_id, current_region = panos_to_region[current_viewpoint]
@@ -629,11 +630,11 @@ class AdvisorQaOracle2(object):
             else:
                 return 'exit room , ', 'prepend'
 
-    def __call__(self, ob, q=None, path=None):
+    def __call__(self, ob, q=None):
         action_seq = self.nav_oracle(ob)
 
         assert q is not None
-        verbal_instruction, edit_type = self._answer_question(action_seq, ob, q, path)
+        verbal_instruction, edit_type = self._answer_question(action_seq, ob, q)
 
         return action_seq, verbal_instruction, edit_type
 

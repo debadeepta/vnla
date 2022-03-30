@@ -191,7 +191,7 @@ class VerbalAskAgent(AskAgent):
             nav_logit_mask = torch.zeros(batch_size,
                                          AskAgent.n_output_nav_actions(), dtype=torch.bool, device=self.device)
             ask_logit_mask = torch.zeros(batch_size,
-                                         AskAgent.n_output_ask_actions(), dtype=torch.bool, device=self.device)
+                                         self.n_output_ask_actions(), dtype=torch.bool, device=self.device)
 
             nav_mask_indices = []
             ask_mask_indices = []
@@ -251,8 +251,7 @@ class VerbalAskAgent(AskAgent):
 
                 if self._should_ask(ended[i], q_t_list[i]):
                     # Query advisor for subgoal.
-                    path = traj[i]['agent_path']
-                    _, verbal_subgoals[i], edit_types[i] = self.advisor(obs[i], q_t_list[i], path)
+                    _, verbal_subgoals[i], edit_types[i] = self.advisor(obs[i], q_t_list[i])
                     # Prepend subgoal to the current instruction
                     self.env.modify_instruction(i, verbal_subgoals[i], edit_types[i])
                     # Reset subgoal step index
