@@ -97,17 +97,17 @@ class AskAgent(BaseAgent):
         else:
             sys.exit("Advisor not recognized")
 
-    @staticmethod
     def n_output_ask_actions(hparams):
+        if hparams.ask_actions is not None:
+            self = hparams          # This will be self instead of hparams in the case that this method is accessed not in a static way
+            return len(self.ask_actions) - 2
+
         if hparams.advisor == "verbal_qa":
             return len(StepByStepSubgoalOracle.question_pool) + 1
         elif hparams.advisor == "verbal_qa2":
             return len(AdvisorQaOracle2.question_pool) + 1
         else:
             sys.exit("Advisor not recognized")
-
-    def n_output_ask_actions(self):
-        return len(self.ask_actions) - 2
 
     def _make_batch(self, obs):
         ''' Make a variable for a batch of input instructions. '''
