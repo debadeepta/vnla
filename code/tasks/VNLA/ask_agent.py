@@ -9,6 +9,7 @@ import sys
 import numpy as np
 import random
 import time
+from argparse import Namespace
 
 import torch
 import torch.nn as nn
@@ -98,7 +99,7 @@ class AskAgent(BaseAgent):
             sys.exit("Advisor not recognized")
 
     def n_output_ask_actions(hparams):
-        if hparams.ask_actions is not None:
+        if type(hparams) is not Namespace:
             self = hparams          # This will be self instead of hparams in the case that this method is accessed not in a static way
             return len(self.ask_actions) - 2
 
