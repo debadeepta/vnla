@@ -51,6 +51,8 @@ class AskAgent(BaseAgent):
             self.advisor = advisor
 
         self.advisor.set_agent_ask_actions(self.ask_actions)
+        self.question_pool = advisor.question_pool
+        self.question_set = advisor.question_set
 
         self.nav_criterion = nn.CrossEntropyLoss(
             ignore_index = self.nav_actions.index('<ignore>'))
