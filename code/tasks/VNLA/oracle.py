@@ -379,14 +379,16 @@ class StepByStepSubgoalOracle(object):
                     'Am I on the right direction?',
                     'How far is the goal from me?']
 
-    def __init__(self, n_steps, agent_nav_actions, agent_ask_actions, mode=None):
+    def __init__(self, n_steps, agent_nav_actions, mode=None):
         self.type = 'step_by_step'
         self.nav_oracle = make_oracle('direct', n_steps, agent_nav_actions)
         self.agent_nav_actions = agent_nav_actions
-        self.agent_ask_actions = agent_ask_actions
         self.mode = mode
         if mode not in ['easy', 'hard', 'qa']:
             sys.exit('unknown step by step mode!')
+
+    def set_agent_ask_actions(self, agent_ask_actions):
+        self.agent_ask_actions = agent_ask_actions
 
     def add_scans(self, scans):
         self.nav_oracle.add_scans(scans)
@@ -503,6 +505,138 @@ class StepByStepSubgoalOracle(object):
             verbal_instruction, edit_type = self._map_actions_to_instruction_hard(action_seq)
         return action_seq, verbal_instruction, edit_type
 
+# Provide answers for the second question set
+class AdvisorQaOracle2(object):
+    question_pool = ['pass',
+                     'stop',
+                     'left',
+                     'right',
+                     'straight',
+                     'near',
+                     'far',
+                     'room']
+
+    question_set = ['Have I passed the goal?',
+                    'Should I stop?',
+                    'Should I turn left?',
+                    'Should I turn right?',
+                    'Should I go straight?',
+                    'Am I near the goal?',
+                    'Is the goal still far from me?',
+                    'Am I in the right room?']
+
+    def __init__(self, agent_nav_actions, success_radius):
+        self.success_radius = success_radius
+        self.type = 'advisor_qa_2'
+        self.nav_oracle = make_oracle('direct', 2, agent_nav_actions)
+        self.agent_nav_actions = agent_nav_actions
+
+    def set_agent_ask_actions(self, agent_ask_actions):
+        self.agent_ask_actions = agent_ask_actions
+
+    def add_scans(self, scans):
+        self.nav_oracle.add_scans(scans)
+
+    def _make_action_name(self, a):
+        action_name = self.agent_nav_actions[a]
+        if action_name in ['up', 'down']:
+            return 'look ' + action_name
+        elif action_name in ['left', 'right']:
+            return 'turn ' + action_name
+        elif action_name == 'forward':
+            return 'go ' + action_name
+        elif action_name == '<end>':
+            return 'stop'
+        elif action_name == '<ignore>':
+            return ''
+        return None
+
+    def _answer_question(self, actions, ob, q, path):  #### Change the agent's interpretation of the answers here ####
+        scan = ob['scan']
+        instr = ob['instruction']
+        current_viewpoint = ob['viewpoint']
+        start_viewpoint = ob['init_viewpoint']
+        goal_viewpoints = ob['goal_viewpoints']
+
+        panos_to_region = utils.load_panos_to_region(scan, None, include_region_id=True)
+        current_region_id, current_region = panos_to_region[current_viewpoint]
+        goal_region_ids = []
+        for viewpoint in goal_viewpoints:
+            id, region = panos_to_region[viewpoint]
+            goal_region_ids.append(id)
+            goal_region = region
+
+        d, goal_point = self.nav_oracle._find_nearest_point(scan, current_viewpoint, ob['goal_viewpoints'])
+
+        action_names = [self._make_action_name(action) for action in actions]
+
+        if self.agent_ask_actions[q] == 'pass':
+            # calculate nearest point in the path
+            nearest = 1e9
+            for (viewpoint, _, _) in path:
+                for goal in goal_viewpoints:
+                    nearest = min(nearest, self.nav_oracle.distances[scan][viewpoint][goal])
+
+            has_passed = nearest <= self.success_radius
+
+            if has_passed:
+                return 'go back , ', 'prepend'
+            else:
+                return 'go around , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'stop':
+            if current_viewpoint in goal_viewpoints:
+                return 'stop .', 'replace'
+            else:
+                return 'continue , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'left':
+            if 'turn left' == action_names[0]:
+                return 'turn left , ', 'prepend'
+            else:
+                return 'do not turn left , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'right':
+            if 'turn right' == action_names[0]:
+                return 'turn right , ', 'prepend'
+            else:
+                return 'do not turn right , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'straight':
+            if 'go forward' == action_names[0]:
+                return 'go straight , ', 'prepend'
+            else:
+                return 'turn around , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'near':
+            if d < 5:
+                return 'near , ', 'prepend'
+            else:
+                return 'not near , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'far':
+            if d >= 10:
+                return 'far , ', 'prepend'
+            else:
+                return 'not far , ', 'prepend'
+
+        if self.agent_ask_actions[q] == 'room':
+            if current_region == goal_region and current_region_id in goal_region_ids:
+                if ('find' in instr) and (' in ' in instr):
+                    return instr[instr.index('find'):instr.index(' in ')], 'replace'
+                else:
+                    return instr, 'replace'
+            else:
+                return 'exit room , ', 'prepend'
+
+    def __call__(self, ob, q=None, path=None):
+        action_seq = self.nav_oracle(ob)
+
+        assert q is not None
+        verbal_instruction, edit_type = self._answer_question(action_seq, ob, q, path)
+
+        return action_seq, verbal_instruction, edit_type
+
 
 def make_oracle(oracle_type, *args, **kwargs):
     if oracle_type == 'shortest':
@@ -528,7 +662,6 @@ def make_oracle(oracle_type, *args, **kwargs):
         return None
     if oracle_type == 'verbal_qa2':
         # Return the oracle for questions answering using the second question set
-        # TODO: Implement verbal_qa2
-        return None
+        return AdvisorQaOracle2(*args, **kwargs)
 
     return None

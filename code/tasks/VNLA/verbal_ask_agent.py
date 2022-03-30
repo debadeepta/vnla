@@ -87,7 +87,7 @@ class VerbalAskAgent(AskAgent):
     test_plotter = None
 
     def __init__(self, model, hparams, device):
-        advisor = VerbalAskAgent._create_advisor(hparams.advisor, hparams.n_subgoal_steps)
+        advisor = VerbalAskAgent._create_advisor(hparams)
         super(VerbalAskAgent, self).__init__(model, hparams, device, advisor)
         self.hparams = hparams
         self.teacher_interpret = hasattr(hparams, 'teacher_interpret') and hparams.teacher_interpret
@@ -95,11 +95,16 @@ class VerbalAskAgent(AskAgent):
         if VerbalAskAgent.test_plotter is None:           # Only need to initialize this once
             VerbalAskAgent.test_plotter = TestPlotter(hparams, self.question_set)
 
-    def _create_advisor(self, advisor_type, n_subgoal_steps):
+    def _create_advisor(self, hparams):
+        advisor_type = hparams.advisor
+        n_subgoal_steps = hparams.n_subgoal_steps
+        success_radius = hparams.success_radius
+
         print(f"Advisor type requested {advisor_type}")
+
         assert 'verbal' in advisor_type
         if advisor_type == 'verbal_qa2':
-            return make_oracle(advisor_type)
+            return make_oracle(advisor_type, self.nav_actions, success_radius)
 
         if 'easy' in advisor_type:
             mode = 'easy'
@@ -110,7 +115,7 @@ class VerbalAskAgent(AskAgent):
         else:
             sys.exit('unknown advisor: %s' % advisor_type)
 
-        return make_oracle('verbal', n_subgoal_steps, self.nav_actions, self.ask_actions, mode=mode)
+        return make_oracle('verbal', n_subgoal_steps, self.nav_actions, mode=mode)
 
     def add_to_plotter(self, is_ended, chosen_question, time_step):
         if is_ended:
@@ -246,7 +251,8 @@ class VerbalAskAgent(AskAgent):
 
                 if self._should_ask(ended[i], q_t_list[i]):
                     # Query advisor for subgoal.
-                    _, verbal_subgoals[i], edit_types[i] = self.advisor(obs[i], q_t_list[i])
+                    path = traj[i]['agent_path']
+                    _, verbal_subgoals[i], edit_types[i] = self.advisor(obs[i], q_t_list[i], path)
                     # Prepend subgoal to the current instruction
                     self.env.modify_instruction(i, verbal_subgoals[i], edit_types[i])
                     # Reset subgoal step index

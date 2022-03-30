@@ -45,11 +45,12 @@ class AskAgent(BaseAgent):
 
         if advisor is None:
             self.ask_actions = ['dont_ask'] + StepByStepSubgoalOracle.question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
-            self.advisor = make_oracle(hparams.advisor, hparams.n_subgoal_steps,
-                self.nav_actions, self.ask_actions)
+            self.advisor = make_oracle(hparams.advisor, hparams.n_subgoal_steps, self.nav_actions)
         else:
             self.ask_actions = ['dont_ask'] + advisor.question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
             self.advisor = advisor
+
+        self.advisor.set_agent_ask_actions(self.ask_actions)
 
         self.nav_criterion = nn.CrossEntropyLoss(
             ignore_index = self.nav_actions.index('<ignore>'))
