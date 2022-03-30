@@ -18,7 +18,7 @@ import torch.nn.functional as F
 
 from utils import padding_idx
 from agent import BaseAgent
-from oracle import make_oracle, StepByStepSubgoalOracle
+from oracle import make_oracle, StepByStepSubgoalOracle, AdvisorQaOracle2
 
 
 class AskAgent(BaseAgent):
@@ -87,12 +87,22 @@ class AskAgent(BaseAgent):
         return len(AskAgent.nav_actions) - 2
 
     @staticmethod
-    def n_input_ask_actions():
-        return len(AskAgent.ask_actions)
+    def n_input_ask_actions(hparams):
+        if hparams.advisor == "verbal_qa":
+            return len(StepByStepSubgoalOracle.question_pool) + 3
+        elif hparams.advisor == "verbal_qa2":
+            return len(AdvisorQaOracle2.question_pool) + 3
+        else:
+            sys.exit("Advisor not recognized")
 
     @staticmethod
-    def n_output_ask_actions():
-        return len(AskAgent.ask_actions) - 2
+    def n_output_ask_actions(hparams):
+        if hparams.advisor == "verbal_qa":
+            return len(StepByStepSubgoalOracle.question_pool) + 1
+        elif hparams.advisor == "verbal_qa2":
+            return len(AdvisorQaOracle2.question_pool) + 1
+        else:
+            sys.exit("Advisor not recognized")
 
     def _make_batch(self, obs):
         ''' Make a variable for a batch of input instructions. '''

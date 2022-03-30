@@ -126,7 +126,7 @@ class AskAttnDecoderLSTM(nn.Module):
 
         self.nav_embedding = nn.Embedding(agent_class.n_input_nav_actions(),
             hparams.nav_embed_size, padding_idx=padding_idx)
-        self.ask_embedding = nn.Embedding(agent_class.n_input_ask_actions(),
+        self.ask_embedding = nn.Embedding(agent_class.n_input_ask_actions(hparams),
             hparams.ask_embed_size)
 
         lstm_input_size = hparams.nav_embed_size + hparams.ask_embed_size + hparams.img_feature_size
@@ -163,7 +163,7 @@ class AskAttnDecoderLSTM(nn.Module):
             ask_predictor_layers.append(nn.Dropout(p=hparams.dropout_ratio))
             current_layer_size = next_layer_size
             next_layer_size //= 2
-        ask_predictor_layers.append(nn.Linear(current_layer_size, agent_class.n_output_ask_actions()))
+        ask_predictor_layers.append(nn.Linear(current_layer_size, agent_class.n_output_ask_actions(hparams)))
 
         self.ask_predictor = nn.Sequential(*tuple(ask_predictor_layers))
 
