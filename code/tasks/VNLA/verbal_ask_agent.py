@@ -95,7 +95,7 @@ class VerbalAskAgent(AskAgent):
         if VerbalAskAgent.test_plotter is None:           # Only need to initialize this once
             VerbalAskAgent.test_plotter = TestPlotter(hparams, self.question_set)
 
-    def _create_advisor(self, hparams):
+    def _create_advisor(hparams):
         advisor_type = hparams.advisor
         n_subgoal_steps = hparams.n_subgoal_steps
         success_radius = hparams.success_radius
@@ -104,7 +104,7 @@ class VerbalAskAgent(AskAgent):
 
         assert 'verbal' in advisor_type
         if advisor_type == 'verbal_qa2':
-            return make_oracle(advisor_type, self.nav_actions, success_radius)
+            return make_oracle(advisor_type, VerbalAskAgent.nav_actions, success_radius)
 
         if 'easy' in advisor_type:
             mode = 'easy'
@@ -115,7 +115,7 @@ class VerbalAskAgent(AskAgent):
         else:
             sys.exit('unknown advisor: %s' % advisor_type)
 
-        return make_oracle('verbal', n_subgoal_steps, self.nav_actions, mode=mode)
+        return make_oracle('verbal', n_subgoal_steps, VerbalAskAgent.nav_actions, mode=mode)
 
     def add_to_plotter(self, is_ended, chosen_question, time_step):
         if is_ended:
