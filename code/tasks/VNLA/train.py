@@ -80,6 +80,7 @@ def compute_ask_stats(traj,agent):
     ask_pred = []
     ask_true = []
     bad_questions = []
+    ask_actions = agent.ask_actions
 
     all_reasons = []
     loss_str = ''
@@ -102,7 +103,7 @@ def compute_ask_stats(traj,agent):
 
         # bad question rule 1
         for index in range(len(pred) - 1):
-            if pred[index] == pred[index + 1] == AskAgent.ask_actions.index('direction') and \
+            if pred[index] == pred[index + 1] == ask_actions.index('direction') and \
                     path[index] == path[index + 1]:
                 bad_question_marks[index + 1] = 1
         
@@ -110,7 +111,7 @@ def compute_ask_stats(traj,agent):
         scan = t['scan']
         goal_viewpoints = t['goal_viewpoints']
 
-        distance_indices = [index for index, question in enumerate(pred) if question == AskAgent.ask_actions.index('distance')]
+        distance_indices = [index for index, question in enumerate(pred) if question == ask_actions.index('distance')]
         for index in range(len(distance_indices)-1):
             _, goal_point = nav_oracle._find_nearest_point(scan, path[distance_indices[index]][0], goal_viewpoints)
             d1, _ = nav_oracle._find_nearest_point_on_a_path(scan, path[distance_indices[index]][0], path[0][0],
@@ -123,7 +124,7 @@ def compute_ask_stats(traj,agent):
         # bad question rule 3
         panos_to_region = load_panos_to_region(scan, None, include_region_id=True)
         room_indices = [index for index, question in enumerate(pred) if
-                        question == AskAgent.ask_actions.index('room')]
+                        question == ask_actions.index('room')]
         for index in range(len(room_indices) - 1):
             region_id_1, region_1 = panos_to_region[path[room_indices[index]][0]]
             region_id_2, region_2 = panos_to_region[path[room_indices[index + 1]][0]]
@@ -133,7 +134,7 @@ def compute_ask_stats(traj,agent):
         # bad question rule 4
         goal_viewpoints = t['goal_viewpoints']
         for index in range(len(pred) - 1):
-            if pred[index] == AskAgent.ask_actions.index('arrive'):
+            if pred[index] == ask_actions.index('arrive'):
                 d, goal_point = nav_oracle._find_nearest_point(scan, path[index][0], goal_viewpoints)
                 if d >= 4:
                     bad_question_marks[index] = 1
@@ -144,14 +145,14 @@ def compute_ask_stats(traj,agent):
 
 
         total_steps += len(true)
-        total_agent_ask += sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+        total_agent_ask += sum(any(x == ask_actions.index(question) for question in StepByStepSubgoalOracle.question_pool)
                                for x in pred)   # TBD
-        total_teacher_ask += sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+        total_teacher_ask += sum(any(x == ask_actions.index(question) for question in StepByStepSubgoalOracle.question_pool)
                                  for x in true)
         ask_pred.extend(pred)
         ask_true.extend(true)
 
-        queries_per_ep.append(sum(any(x == AskAgent.ask_actions.index(question) for question in AskAgent.question_pool)
+        queries_per_ep.append(sum(any(x == ask_actions.index(question) for question in StepByStepSubgoalOracle.question_pool)
                                   for x in pred))
         teacher_reason = t['teacher_ask_reason'][:end_step]
         all_reasons.extend(teacher_reason)

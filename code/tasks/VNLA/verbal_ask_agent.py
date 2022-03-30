@@ -87,26 +87,30 @@ class VerbalAskAgent(AskAgent):
     test_plotter = None
 
     def __init__(self, model, hparams, device):
-        super(VerbalAskAgent, self).__init__(model, hparams, device,
-                                             should_make_advisor=False)
-
-        assert 'verbal' in hparams.advisor
-        if 'easy' in hparams.advisor:
-            mode = 'easy'
-        elif 'hard' in hparams.advisor:
-            mode = 'hard'
-        elif 'qa' in hparams.advisor:
-            mode = 'qa'
-        else:
-            sys.exit('unknown advisor: %s' % hparams.advisor)
-
-        self.advisor = make_oracle('verbal', hparams.n_subgoal_steps,
-                                   self.nav_actions, self.ask_actions, mode=mode)
+        advisor = VerbalAskAgent._create_advisor(hparams.advisor, hparams.n_subgoal_steps)
+        super(VerbalAskAgent, self).__init__(model, hparams, device, advisor)
         self.hparams = hparams
         self.teacher_interpret = hasattr(hparams, 'teacher_interpret') and hparams.teacher_interpret
 
         if VerbalAskAgent.test_plotter is None:           # Only need to initialize this once
             VerbalAskAgent.test_plotter = TestPlotter(hparams, self.question_set)
+
+    def _create_advisor(self, advisor_type, n_subgoal_steps):
+        print(f"Advisor type requested {advisor_type}")
+        assert 'verbal' in advisor_type
+        if advisor_type == 'verbal_qa2':
+            return make_oracle(advisor_type)
+
+        if 'easy' in advisor_type:
+            mode = 'easy'
+        elif 'hard' in advisor_type:
+            mode = 'hard'
+        elif 'qa' in advisor_type:
+            mode = 'qa'
+        else:
+            sys.exit('unknown advisor: %s' % advisor_type)
+
+        return make_oracle('verbal', n_subgoal_steps, self.nav_actions, self.ask_actions, mode=mode)
 
     def add_to_plotter(self, is_ended, chosen_question, time_step):
         if is_ended:

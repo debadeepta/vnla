@@ -18,7 +18,7 @@ import torch.nn.functional as F
 
 from utils import padding_idx
 from agent import BaseAgent
-from oracle import make_oracle
+from oracle import make_oracle, StepByStepSubgoalOracle
 
 
 class AskAgent(BaseAgent):
@@ -36,21 +36,21 @@ class AskAgent(BaseAgent):
         (0, 0, 0)  # <ignore>
     ]
 
-    question_pool = ['arrive',  # do I arrive?
-                     'room',  # am I in the room containing the goal?
-                     'direction',  # am I on the right direction?
-                     'distance']  # is the goal still far from me?
-    question_set = ['Do I arrive at the goal?',
-                    'Am I in the right room?',
-                    'Am I on the right direction?',
-                    'How far is the goal from me?']
-    ask_actions = ['dont_ask'] + question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
     feedback_options = ['teacher', 'argmax', 'sample']
 
-    def __init__(self, model, hparams, device, should_make_advisor=True):
+    def __init__(self, model, hparams, device, advisor=None):
         super(AskAgent, self).__init__()
         self.model = model
         self.episode_len = hparams.max_episode_length
+
+        if advisor is None:
+            self.ask_actions = ['dont_ask'] + StepByStepSubgoalOracle.question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
+            self.advisor = make_oracle(hparams.advisor, hparams.n_subgoal_steps,
+                self.nav_actions, self.ask_actions)
+        else:
+            self.ask_actions = ['dont_ask'] + advisor.question_pool + ['<start>', '<ignore>']  #### DO NOT CHANGE THIS ORDER ####
+            self.advisor = advisor
+
         self.nav_criterion = nn.CrossEntropyLoss(
             ignore_index = self.nav_actions.index('<ignore>'))
         self.ask_criterion = nn.CrossEntropyLoss(
@@ -58,9 +58,6 @@ class AskAgent(BaseAgent):
 
         self.teacher = make_oracle('next_optimal', hparams, self.nav_actions,
             self.env_actions, self.ask_actions)
-        if should_make_advisor:
-            self.advisor = make_oracle(hparams.advisor, hparams.n_subgoal_steps,
-                self.nav_actions, self.ask_actions)
 
         self.device = device
 

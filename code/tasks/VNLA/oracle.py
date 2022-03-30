@@ -369,6 +369,15 @@ class NextOptimalOracle(object):
 
 
 class StepByStepSubgoalOracle(object):
+    question_pool = ['arrive',  # do I arrive?
+                     'room',  # am I in the room containing the goal?
+                     'direction',  # am I on the right direction?
+                     'distance']  # is the goal still far from me?
+
+    question_set = ['Do I arrive at the goal?',
+                    'Am I in the right room?',
+                    'Am I on the right direction?',
+                    'How far is the goal from me?']
 
     def __init__(self, n_steps, agent_nav_actions, agent_ask_actions, mode=None):
         self.type = 'step_by_step'
@@ -511,8 +520,9 @@ def make_oracle(oracle_type, *args, **kwargs):
     if oracle_type == 'verbal':
         # returns (the next n_step of optimal agent actions, verbal instruction in string), NOT in batch
         return StepByStepSubgoalOracle(*args, **kwargs)
+    if oracle_type == 'verbal_qa2':
+        # Return the oracle for questions answering using the second QA set
+        # TODO: Implement verbal_qa2
+        return None
 
     return None
-
-
-
